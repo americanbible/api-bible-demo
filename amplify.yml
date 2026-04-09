@@ -1,0 +1,18 @@
+version: 1
+applications:
+  - frontend:
+      phases:
+        preBuild:
+          commands:
+            - env
+            - yarn install
+        build:
+          commands:
+            - env | grep -e API_BIBLE_API_KEY >> ./.env.production
+            - npm run build
+      artifacts:
+        baseDirectory: .next
+        files:
+          - "**/*"
+      buildPath: /
+    appRoot: /
