@@ -8,6 +8,9 @@ permissions:
   id-token: write
 jobs:
   build:
+    environment:
+      name: github-pages
+      url: https://rest-prod.prod.api.bible
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,10 +19,16 @@ jobs:
       - uses: actions/configure-pages@v4
       - run: npm ci
       - run: npx next build
+        env:
+          API_BIBLE_API_KEY: ${{ secrets.API_BIBLE_API_KEY }}
       - uses: actions/upload-pages-artifact@v3
         with: { path: ./out }
   deploy:
     needs: build
+    environment:
+      name: github-pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/deploy-pages@v4
+        env:
+          API_BIBLE_API_KEY: ${{ secrets.API_BIBLE_API_KEY }}
