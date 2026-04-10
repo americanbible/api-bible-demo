@@ -1,9 +1,12 @@
-import { BibleInfoHeader } from "@/components/BibleInfoHeader";
-import { Title } from "@/components/Title";
+import { Header } from "@/components/Header";
 import { LinkButton } from "@/components/LinkButton";
 import { Bible, Book } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { Book as BookIcon } from "lucide-react";
+import { InfoCard } from "@/components/InfoCard";
+import Link from "next/link";
+import { ActionList } from "@/components/ActionList";
+import { JSONContent } from "@/components/JSONContent";
 
 type BookPageProps = {
   params: Promise<{ bibleId: string; bookId: string }>;
@@ -21,11 +24,13 @@ export default async function BookPage(props: BookPageProps) {
   });
   return (
     <div className="flex flex-col gap-4">
-      <BibleInfoHeader
+      <Header
         bible={bible}
+        title={book.name}
+        subtitle={book.id}
         breadcrumbs={[
           {
-            title: "Bibles",
+            title: "Home",
             href: "/",
           },
           {
@@ -37,17 +42,43 @@ export default async function BookPage(props: BookPageProps) {
             href: `/bibles/${bibleId}/books`,
           },
           {
-            title: book.nameLong,
+            title: book.name,
             href: `/bibles/${bibleId}/books/${bookId}`,
           },
         ]}
       />
-      <div className="flex flex-col">
-        <Title page="Book" title={`${book.nameLong} (${book.id})`} />
-        <div className="font-light">{book.chapters.length} chapters</div>
-      </div>
-
-      <div className="flex gap-4">
+      <InfoCard
+        title="Fetching a Single Book"
+        url="https://rest.api.bible/v1/bibles/{bibleId}/books/{bookId}"
+        info={
+          <>
+            <p className="mb-2">
+              To fetch a single book for a Bible, you must send a{" "}
+              <code className="font-bold">GET</code> request to the above API
+              endpoint using the <b>Bible ID</b> and <b>Book ID</b> you would
+              like to fetch. For more information, check out our{" "}
+              <Link
+                href="https://docs.api.bible/guides/books"
+                className="underline"
+              >
+                Books Guide.
+              </Link>
+            </p>
+            <p className="text-sm">
+              Tip: If you are having trouble finding the correct <b>Book ID</b>,
+              try{" "}
+              <Link
+                href="https://docs.api.bible/guides/books#fetching-a-list-of-books-for-a-bible"
+                className="underline"
+              >
+                fetching the books in this Bible
+              </Link>{" "}
+              first.
+            </p>
+          </>
+        }
+      />
+      <ActionList>
         <LinkButton
           title="View Chapters"
           href={`/bibles/${bibleId}/books/${bookId}/chapters`}
@@ -61,7 +92,9 @@ export default async function BookPage(props: BookPageProps) {
         >
           <BookIcon size={16} />
         </LinkButton>
-      </div>
+      </ActionList>
+
+      <JSONContent json={book} />
     </div>
   );
 }

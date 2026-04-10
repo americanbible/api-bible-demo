@@ -1,8 +1,9 @@
-import { BibleInfoHeader } from "@/components/BibleInfoHeader";
+import { Header } from "@/components/Header";
+import { InfoCard } from "@/components/InfoCard";
 import { List } from "@/components/List";
-import { Title } from "@/components/Title";
 import { Bible, Book } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
+import Link from "next/link";
 
 type BooksListPageProps = {
   params: Promise<{ bibleId: string }>;
@@ -21,11 +22,13 @@ export default async function BooksListPage(props: BooksListPageProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <BibleInfoHeader
+      <Header
         bible={bible}
+        title="Books"
+        subtitle={`${books.length}`}
         breadcrumbs={[
           {
-            title: "Bibles",
+            title: "Home",
             href: "/",
           },
           {
@@ -38,20 +41,42 @@ export default async function BooksListPage(props: BooksListPageProps) {
           },
         ]}
       />
-      <div className="flex flex-col gap-2">
-        <Title page="Books" title={`${bible.name} (${books.length})`} />
-        <List
-          items={books.map((book) => ({
-            title: (
-              <p>
-                <span className="font-bold">{book.nameLong}</span> ({book.id})
-              </p>
-            ),
-            href: `/bibles/${bibleId}/books/${book.id}`,
-            info: `${book.chapters.length} chapters`,
-          }))}
-        />
-      </div>
+      <InfoCard
+        title="Fetching Books of a Bible"
+        url="https://rest.api.bible/v1/bibles/{bibleId}/books"
+        info={
+          <>
+            <p className="mb-2">
+              To fetch a list of books for a Bible, you must send a{" "}
+              <code className="font-bold">GET</code> request to the above API
+              endpoint using the <b>Bible ID</b> of the Bible you would like to
+              fetch. For more information, check out our{" "}
+              <Link
+                href="https://docs.api.bible/guides/books"
+                className="underline"
+              >
+                Books Guide.
+              </Link>
+            </p>
+            <p className="text-sm">
+              Tip: Using the <code className="font-bold">include-chapters</code>{" "}
+              query parameter will allow you to fetch every book and chapter for
+              this Bible in a single request.
+            </p>
+          </>
+        }
+      />
+      <List
+        items={books.map((book) => ({
+          title: (
+            <p>
+              <span className="font-bold">{book.name}</span> ({book.id})
+            </p>
+          ),
+          href: `/bibles/${bibleId}/books/${book.id}`,
+          info: `${book.chapters.length} chapters`,
+        }))}
+      />
     </div>
   );
 }

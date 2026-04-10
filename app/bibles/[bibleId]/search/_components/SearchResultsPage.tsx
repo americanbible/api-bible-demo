@@ -1,10 +1,12 @@
-import { BibleInfoHeader } from "@/components/BibleInfoHeader";
+import { Header } from "@/components/Header";
 import { List } from "@/components/List";
-import { Title } from "@/components/Title";
 import { LinkButton } from "@/components/LinkButton";
 import { Bible, SearchResults } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ActionList } from "@/components/ActionList";
+import Link from "next/link";
+import { InfoCard } from "@/components/InfoCard";
 
 type SearchResultsPageProps = {
   bibleId: string;
@@ -33,7 +35,7 @@ export async function SearchResultsPage({
     },
   });
 
-  if (result.verses?.length && !result.passages.length) {
+  if (result.verses?.length && !result.passages?.length) {
     const { offset, total } = result;
 
     const previousButtonVisible = page > 0;
@@ -59,44 +61,42 @@ export async function SearchResultsPage({
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 pt-4 border-t-zinc-200 border-t-1">
+        <ActionList>
+          {previousButtonVisible && (
+            <LinkButton
+              title="Previous Page"
+              href={`/bibles/${bibleId}/search/${searchLink}?page=${page - 1}`}
+            >
+              <ArrowLeft size={16} />
+            </LinkButton>
+          )}
+          {nextButtonVisible && (
+            <LinkButton
+              title="Next Page"
+              href={`/bibles/${bibleId}/search/${searchLink}?page=${page + 1}`}
+              className="flex-row-reverse"
+            >
+              <ArrowRight size={16} />
+            </LinkButton>
+          )}
+        </ActionList>
+
+        <div className="flex flex-col gap-4">
           {!result.verses?.length && (
             <p className="self-center justify-self-center">No results found.</p>
           )}
           {!!result.verses?.length && (
-            <>
-              <div className="w-full flex items-center gap-4">
-                {previousButtonVisible && (
-                  <LinkButton
-                    title="Previous Page"
-                    href={`/bibles/${bibleId}/search/${searchLink}?page=${page - 1}`}
-                  >
-                    <ArrowLeft size={16} />
-                  </LinkButton>
-                )}
-                <div className="grow" />
-                {nextButtonVisible && (
-                  <LinkButton
-                    title="Next Page"
-                    href={`/bibles/${bibleId}/search/${searchLink}?page=${page + 1}`}
-                    className="flex-row-reverse"
-                  >
-                    <ArrowRight size={16} />
-                  </LinkButton>
-                )}
-              </div>
-              <List
-                items={result.verses.map((verse) => ({
-                  title: (
-                    <div className="flex flex-col pb-2">
-                      <b className="text-sm">{verse.reference}</b>
-                      <p>{verse.text}</p>
-                    </div>
-                  ),
-                  href: `/bibles/${bibleId}/verses/${verse.id}`,
-                }))}
-              />
-            </>
+            <List
+              items={result.verses.map((verse) => ({
+                title: (
+                  <div className="flex flex-col pb-2">
+                    <b className="text-sm">{verse.reference}</b>
+                    <p>{verse.text}</p>
+                  </div>
+                ),
+                href: `/bibles/${bibleId}/verses/${verse.id}`,
+              }))}
+            />
           )}
         </div>
       </div>
@@ -157,11 +157,12 @@ const SearchResultHeader = ({
 }: SearchResultHeaderProps) => {
   return (
     <>
-      <BibleInfoHeader
+      <Header
         bible={bible}
+        title="Search"
         breadcrumbs={[
           {
-            title: "Bibles",
+            title: "Home",
             href: "/",
           },
           {
@@ -178,8 +179,41 @@ const SearchResultHeader = ({
           },
         ]}
       />
-
-      <Title page="Search" title={`${bible.name}`} />
+      <InfoCard
+        title="Searching a Bible"
+        url="https://rest.api.bible/v1/bibles/{bibleId}/search?query={query}"
+        info={
+          <>
+            <p className="mb-2">
+              To search within a Bible, you must send a GET request to the above
+              API endpoint using the appropriate <b>Bible ID</b> and search
+              terms (in the <code className="font-bold">query</code> query
+              parameter) you are looking to find. For more information, check
+              out our{" "}
+              <Link
+                href="https://docs.api.bible/guides/search"
+                className="underline"
+              >
+                Search Guide
+              </Link>
+              .
+            </p>
+            <p className="text-sm">
+              Tip: The <code className="font-bold">text</code> property of each
+              search result contains only the verse text, it does not contain
+              footnote references or additional formatting. However, more
+              information on a verse can be queried directly by{" "}
+              <Link
+                href="https://docs.api.bible/guides/verses#fetching-a-single-verse"
+                className="underline"
+              >
+                fetching a single verse
+              </Link>
+              .
+            </p>
+          </>
+        }
+      />
     </>
   );
 };

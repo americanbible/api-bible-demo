@@ -1,8 +1,9 @@
-import { BibleInfoHeader } from "@/components/BibleInfoHeader";
+import { Header } from "@/components/Header";
+import { InfoCard } from "@/components/InfoCard";
 import { List } from "@/components/List";
-import { Title } from "@/components/Title";
 import { Bible, Chapter, Verse } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
+import Link from "next/link";
 
 type VersesListPageProps = {
   params: Promise<{ bibleId: string; chapterId: string }>;
@@ -23,11 +24,13 @@ export default async function VersesListPage(props: VersesListPageProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <BibleInfoHeader
+      <Header
         bible={bible}
+        title={`${chapter.reference} Verses`}
+        subtitle={`${verses.length}`}
         breadcrumbs={[
           {
-            title: "Bibles",
+            title: "Home",
             href: "/",
           },
           {
@@ -44,8 +47,38 @@ export default async function VersesListPage(props: VersesListPageProps) {
           },
         ]}
       />
-
-      <Title page="Verses" title={`${chapter.reference} (${verses.length})`} />
+      <InfoCard
+        title="Fetching Verses in a Chapter"
+        url="https://rest.api.bible/v1/bibles/{bibleId}/chapters/{chapterId}/verses"
+        info={
+          <>
+            <p className="mb-2">
+              To fetch a list of verses for a chapter of the Bible, you must
+              send a <code className="font-bold">GET</code> request to the above
+              API endpoint using the <b>Bible ID</b> and <b>Chapter ID</b> you
+              would like to fetch. For more information, check out our{" "}
+              <Link
+                href="https://docs.api.bible/guides/verses"
+                className="underline"
+              >
+                Verses Guide.
+              </Link>
+            </p>
+            <p className="text-sm">
+              Tip: You may also use the{" "}
+              <code className="font-bold">/chapters</code> endpoint to fetch
+              verse data. For more, see our guide on{" "}
+              <Link
+                href="https://docs.api.bible/guides/chapters#fetching-a-list-of-chapters-for-a-book"
+                className="underline"
+              >
+                Fetching a List of Chapters for a Book
+              </Link>
+              .
+            </p>
+          </>
+        }
+      />
       <List
         items={verses.map((verse) => ({
           title: (

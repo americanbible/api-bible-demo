@@ -1,8 +1,9 @@
-import { BibleInfoHeader } from "@/components/BibleInfoHeader";
-import { Title } from "@/components/Title";
+import { Header } from "@/components/Header";
+import { InfoCard } from "@/components/InfoCard";
 import { VerseContent } from "@/components/VerseContent";
 import { Bible, VerseWithVerseContent } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
+import Link from "next/link";
 
 type VersePageProps = {
   params: Promise<{ bibleId: string; verseId: string }>;
@@ -24,11 +25,13 @@ export default async function VersePage(props: VersePageProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <BibleInfoHeader
+      <Header
         bible={bible}
+        title={verse.reference}
+        subtitle={verse.id}
         breadcrumbs={[
           {
-            title: "Bibles",
+            title: "Home",
             href: "/",
           },
           {
@@ -45,7 +48,38 @@ export default async function VersePage(props: VersePageProps) {
         ]}
       />
 
-      <Title page="Verse" title={`${verse.reference} (${verse.id})`} />
+      <InfoCard
+        title="Fetching a Single Verse"
+        url="https://rest.api.bible/v1/bibles/{bibleId}/verses/{verseId}"
+        info={
+          <>
+            <p className="mb-2">
+              To fetch information and content for a single verse, you must send
+              a <code className="font-bold">GET</code> request to the above API
+              endpoint using the <b>Bible ID</b> and <b>Verse ID</b> you would
+              like to fetch. For more information, check out our{" "}
+              <Link
+                href="https://docs.api.bible/guides/verses"
+                className="underline"
+              >
+                Verses Guide.
+              </Link>
+            </p>
+            <p className="text-sm">
+              Tip: This endpoint will also return verse content within the{" "}
+              <code className="font-bold">content</code> field. Verse content
+              can be configured based on the given input parameters, see our{" "}
+              <Link
+                href="https://docs.api.bible/guides/verses#verse-content"
+                className="underline"
+              >
+                Verse Content Guide
+              </Link>{" "}
+              for more.
+            </p>
+          </>
+        }
+      />
 
       <VerseContent
         linkBase={`/bibles/${bibleId}/verses`}

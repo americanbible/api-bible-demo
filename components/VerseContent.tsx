@@ -1,6 +1,6 @@
 import { VerseContent as VerseContentType } from "@/types/api";
-import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
-import Link from "next/link";
+import { ActionList } from "./ActionList";
+import { LinkButton } from "./LinkButton";
 
 type VerseContentProps = {
   linkBase: string;
@@ -11,29 +11,30 @@ export const VerseContent = ({
   linkBase,
   verseContent: { previous, next, content },
 }: VerseContentProps) => {
-  const navButtonClassName = "w-[24px]  pt-4";
   return (
-    <div className="w-full flex gap-8 pt-2 border-t-zinc-200 border-t-1">
-      <div className={navButtonClassName}>
-        {!!previous && (
-          <Link href={`${linkBase}/${previous.id}`} title="Previous">
-            <ArrowLeftCircle size={32} className="hover:text-zinc-600" />
-          </Link>
+    <>
+      <ActionList>
+        {!!previous?.id && (
+          <LinkButton
+            href={`${linkBase}/${previous.id}`}
+            title="Previous Verse"
+          />
         )}
-      </div>
-      <div className="grow">
-        <div
-          className="scripture-styles"
-          dangerouslySetInnerHTML={{ __html: content }}
-        />
-      </div>
-      <div className={navButtonClassName}>
-        {!!next && (
-          <Link href={`${linkBase}/${next.id}`} title="Next">
-            <ArrowRightCircle size={32} className="hover:text-zinc-600" />
-          </Link>
+        {!!next?.id && (
+          <LinkButton href={`${linkBase}/${next.id}`} title="Next Verse" />
         )}
+      </ActionList>
+      {!previous?.id && !next?.id && (
+        <div className="w-full pb-4 border-zinc-200 border-b-1" />
+      )}
+      <div className="w-full flex flex-col items-center">
+        <div className="max-w-[60vw]">
+          <div
+            className="scripture-styles"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };

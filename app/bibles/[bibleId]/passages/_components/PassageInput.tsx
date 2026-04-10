@@ -19,13 +19,13 @@ export const PassageInput = ({ bibleId }: PassageInputProps) => {
     <div className="flex flex-col gap-4 pt-2 border-t-zinc-200 border-t-1">
       <p className="text-sm">
         Enter two verse IDs below to find a passage. If you are having trouble
-        finding verse IDs, see our{" "}
+        finding verse IDs, check out our{" "}
         <Link className="underline" href="https://docs.api.bible/guides/verses">
-          verses guide.
+          Verses Guide.
         </Link>
       </p>
 
-      <div className="flex flex-row gap-8">
+      <div className="flex flex-row gap-4">
         <div className="flex flex-col gap-1">
           <h5 className="text-sm font-bold">StartIng Verse ID:</h5>
           <input
