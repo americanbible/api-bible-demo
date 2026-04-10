@@ -80,6 +80,7 @@ export default async function VersePage(props: VersePageProps) {
           </>
         }
       />
+      <div className="w-full pb-4 border-zinc-200 border-b-1" />
 
       <VerseContent
         linkBase={`/bibles/${bibleId}/verses`}

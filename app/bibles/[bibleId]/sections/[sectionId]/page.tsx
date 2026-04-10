@@ -79,6 +79,7 @@ export default async function SectionPage(props: SectionPageProps) {
           </>
         }
       />
+      <div className="w-full pb-4 border-zinc-200 border-b-1" />
       <VerseContent
         linkBase={`/bibles/${bibleId}/sections`}
         verseContent={section}

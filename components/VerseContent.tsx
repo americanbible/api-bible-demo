@@ -13,7 +13,16 @@ export const VerseContent = ({
 }: VerseContentProps) => {
   return (
     <>
-      <ActionList>
+      <div className="w-full flex flex-col items-center">
+        <div className="max-w-[60vw]">
+          <div
+            className="scripture-styles"
+            dangerouslySetInnerHTML={{ __html: content }}
+          />
+        </div>
+      </div>
+
+      <ActionList className="justify-center gap-4 mt-4">
         {!!previous?.id && (
           <LinkButton
             href={`${linkBase}/${previous.id}`}
@@ -24,17 +33,6 @@ export const VerseContent = ({
           <LinkButton href={`${linkBase}/${next.id}`} title="Next Verse" />
         )}
       </ActionList>
-      {!previous?.id && !next?.id && (
-        <div className="w-full pb-4 border-zinc-200 border-b-1" />
-      )}
-      <div className="w-full flex flex-col items-center">
-        <div className="max-w-[60vw]">
-          <div
-            className="scripture-styles"
-            dangerouslySetInnerHTML={{ __html: content }}
-          />
-        </div>
-      </div>
     </>
   );
 };
