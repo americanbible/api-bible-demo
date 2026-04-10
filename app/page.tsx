@@ -2,7 +2,6 @@ import { ActionList } from "@/components/ActionList";
 import { InfoCard } from "@/components/InfoCard";
 import { LinkButton } from "@/components/LinkButton";
 import { List } from "@/components/List";
-import { Title } from "@/components/Title";
 import { Bible } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { demoBibles } from "@/utils/demoBibles";

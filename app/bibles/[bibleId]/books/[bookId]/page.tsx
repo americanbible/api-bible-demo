@@ -22,6 +22,7 @@ export default async function BookPage(props: BookPageProps) {
     endpoint: `/bibles/${bibleId}/books/${bookId}`,
     params: { "include-chapters": "true" },
   });
+
   return (
     <div className="flex flex-col gap-4">
       <Header
@@ -94,7 +95,10 @@ export default async function BookPage(props: BookPageProps) {
         </LinkButton>
       </ActionList>
 
-      <JSONContent json={book} />
+      <JSONContent
+        //Truncate chapter display to reduce page clutter
+        json={{ ...book, chapters: `Array(${book.chapters.length})` }}
+      />
     </div>
   );
 }
