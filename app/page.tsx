@@ -87,7 +87,7 @@ export default async function HomePage() {
         info={
           <>
             <p className="mb-2">
-              o fetch your list of available Bibles, you must send a{" "}
+              To fetch your list of available Bibles, you must send a{" "}
               <code className="font-bold">GET</code> request to the above API
               endpoint. This will return a list of every Bible you have access
               to via API.Bible. This includes all Public Domain and Creative
