@@ -9,15 +9,23 @@ type VersesListPageProps = {
   params: Promise<{ bibleId: string; chapterId: string }>;
 };
 
+/**
+ * Verses list page. Renders the full list of verses for the given chapter of the Bible.
+ *
+ * See our [Verses Guide](https://docs.api.bible/guides/verses) for more.
+ */
 export default async function VersesListPage(props: VersesListPageProps) {
   const { bibleId, chapterId } = await props.params;
 
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });
+  //Fetch a single chapter from the `/bibles/{bibleId}/chapters/{chapterId}` endpoint
   const chapter = await makeCachedApiRequest<Chapter>({
     endpoint: `/bibles/${bibleId}/chapters/${chapterId}`,
   });
+  //Fetch full list of verses for the given chapter from the `/bibles/{bibleId}/chapters/{chapterId}/verses` endpoint
   const verses = await makeCachedApiRequest<Verse[]>({
     endpoint: `/bibles/${bibleId}/chapters/${chapterId}/verses`,
   });

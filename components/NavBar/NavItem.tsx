@@ -5,6 +5,9 @@ export interface NavItemProps extends React.HTMLAttributes<HTMLAnchorElement> {
   isActive?: boolean;
 }
 
+/**
+ * Renders a nav item with a clickable link. Handles both internal and external links
+ */
 export const NavItem = ({
   className: incomingClassName = "",
   children,

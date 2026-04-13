@@ -9,12 +9,19 @@ type SectionPageProps = {
   params: Promise<{ bibleId: string; sectionId: string }>;
 };
 
+/**
+ * Single section page. Renders resulting section verse content.
+ *
+ * See our [Sections Guide](https://docs.api.bible/guides/sections) for more.
+ */
 export default async function SectionPage(props: SectionPageProps) {
   const { bibleId, sectionId } = await props.params;
 
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });
+  //Fetch a single section from the `/bibles/{bibleId}/sections/{sectionId}` endpoint
   const section = await makeCachedApiRequest<SectionWithVerseContent>({
     endpoint: `/bibles/${bibleId}/sections/${sectionId}`,
     params: {

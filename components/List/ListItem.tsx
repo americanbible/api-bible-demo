@@ -7,6 +7,9 @@ export type ListItemProps = {
   info?: string;
 };
 
+/**
+ * Simple list item component for rendering an item returned from the API that navigates on click
+ */
 export const ListItem = ({ title, href, info }: ListItemProps) => {
   return (
     <Link

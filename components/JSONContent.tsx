@@ -2,6 +2,9 @@ type JSONContentProps = {
   json: object;
 };
 
+/**
+ * Renders raw JSON content returned from the API
+ */
 export const JSONContent = ({ json }: JSONContentProps) => {
   return (
     <div className="w-full">

@@ -25,6 +25,9 @@ export const metadata: Metadata = {
   },
 };
 
+/**
+ * Global layout for the application. Renders the Navbar
+ */
 export default function RootLayout({
   children,
 }: Readonly<{

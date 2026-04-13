@@ -9,9 +9,17 @@ type SectionPageProps = {
   params: Promise<{ bibleId: string }>;
 };
 
+/**
+ * Passage selection page. Renders two inputs that allow users to select any given passage.
+ *
+ * See our [Passages Guide](https://docs.api.bible/guides/passages) for more.
+ *
+ * *Note: There is no corresponding `/passages` endpoint in the API, this is simply a utility page to assist in passage selection.*
+ */
 export default async function SectionPage(props: SectionPageProps) {
   const { bibleId } = await props.params;
 
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });

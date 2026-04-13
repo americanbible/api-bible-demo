@@ -7,6 +7,10 @@ type InfoCardProps = {
   info: ReactNode;
 };
 
+/**
+ * Renders a card containing "help" text, used to provide extra information to the user
+ * about the page they are currently visiting.
+ */
 export const InfoCard = ({ title, info, url }: InfoCardProps) => {
   return (
     <div className="bg-zinc-100 border-zinc-500 border-1 rounded-md w-full p-4 flex gap-2">

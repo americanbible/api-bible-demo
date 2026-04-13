@@ -5,6 +5,9 @@ type ActionListProps = {
   className?: string;
 };
 
+/**
+ * Renders a list of actions in a row, typically `LinkButtons`
+ */
 export const ActionList = ({ children, className = "" }: ActionListProps) => {
   return (
     <div

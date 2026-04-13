@@ -12,12 +12,19 @@ type BookPageProps = {
   params: Promise<{ bibleId: string; bookId: string }>;
 };
 
+/**
+ * Single book page. Renders resulting book content as JSON.
+ *
+ * See our [Books Guide](https://docs.api.bible/guides/books) for more.
+ */
 export default async function BookPage(props: BookPageProps) {
   const { bibleId, bookId } = await props.params;
 
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });
+  //Fetch a single book from the `/bibles/{bibleId}/books/{bookId}` endpoint
   const book = await makeCachedApiRequest<Book>({
     endpoint: `/bibles/${bibleId}/books/${bookId}`,
     params: { "include-chapters": "true" },

@@ -12,12 +12,19 @@ type ChapterPageProps = {
   params: Promise<{ bibleId: string; chapterId: string }>;
 };
 
+/**
+ * Single chapter page. Renders resulting chapter verse content.
+ *
+ * See our [Chapters Guide](https://docs.api.bible/guides/chapters) for more.
+ */
 export default async function ChapterPage(props: ChapterPageProps) {
   const { bibleId, chapterId } = await props.params;
 
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });
+  //Fetch a single chapter from the `/bibles/{bibleId}/chapters/{chapterId}` endpoint
   const chapter = await makeCachedApiRequest<ChapterWithVerseContent>({
     endpoint: `/bibles/${bibleId}/chapters/${chapterId}`,
     params: {

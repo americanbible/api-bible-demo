@@ -9,12 +9,19 @@ type BooksListPageProps = {
   params: Promise<{ bibleId: string }>;
 };
 
+/**
+ * Books list page. Renders the full list of books for a given Bible.
+ *
+ * See our [Books Guide](https://docs.api.bible/guides/books) for more.
+ */
 export default async function BooksListPage(props: BooksListPageProps) {
   const { bibleId } = await props.params;
 
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });
+  //Fetch full list of books for the given Bible from the `/bibles/{bibleId}/books` endpoint
   const books = await makeCachedApiRequest<Book[]>({
     endpoint: `/bibles/${bibleId}/books`,
     params: { "include-chapters": "true" },

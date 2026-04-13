@@ -8,9 +8,8 @@ type BibleLayoutProps = {
 };
 
 /**
- * Simple layout guard to protect against unauthorized Bible access
- * @param props
- * @returns
+ * Simple layout guard to protect against unauthorized Bible access for the live demo.
+ * This file can be safely deleted when this application is run locally.
  */
 export default async function BibleLayout({
   params,

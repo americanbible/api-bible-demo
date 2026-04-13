@@ -11,9 +11,17 @@ type SearchPageProps = {
   params: Promise<{ bibleId: string }>;
 };
 
+/**
+ * Search selection page. Provides a list of preselected search options for the user to test out our search functionality.
+ *
+ * See our [Search Guide](https://docs.api.bible/guides/search) for more.
+ *
+ * *Note: You cannot call the  `/search` endpoint in the API without a `query` attached to it, this is simply a utility page to reduce API usage.*
+ */
 export default async function SearchPage(props: SearchPageProps) {
   const { bibleId } = await props.params;
 
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });

@@ -8,6 +8,9 @@ type LinkButtonProps = {
   className?: string;
 };
 
+/**
+ * Renders a link as a button
+ */
 export const LinkButton = ({
   title,
   href,

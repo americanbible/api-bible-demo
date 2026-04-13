@@ -8,6 +8,9 @@ type PassageInputProps = {
   bibleId: string;
 };
 
+/**
+ * Renders a pair of inputs that allows the user to select their own passage
+ */
 export const PassageInput = ({ bibleId }: PassageInputProps) => {
   const [startVerseId, setStartVerseId] = useState<string>("");
   const [endVerseId, setEndVerseId] = useState<string>("");

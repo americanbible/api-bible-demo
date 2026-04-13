@@ -9,12 +9,19 @@ type PassagePageProps = {
   params: Promise<{ bibleId: string; passageId: string }>;
 };
 
+/**
+ * Single passage page. Renders resulting passage verse content.
+ *
+ * See our [Passages Guide](https://docs.api.bible/guides/passages) for more.
+ */
 export default async function PassagePage(props: PassagePageProps) {
   const { bibleId, passageId } = await props.params;
 
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });
+  //Fetch a single passage from the `/bibles/{bibleId}/passages/{passageId}` endpoint
   const passage = await makeCachedApiRequest<Passage>({
     endpoint: `/bibles/${bibleId}/passages/${passageId}`,
     params: {

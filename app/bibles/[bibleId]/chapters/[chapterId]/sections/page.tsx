@@ -9,15 +9,23 @@ type SectionsListPageProps = {
   params: Promise<{ bibleId: string; chapterId: string }>;
 };
 
+/**
+ * Sections list page. Renders the full list of sections for the given chapter of the Bible.
+ *
+ * See our [Sections Guide](https://docs.api.bible/guides/sections) for more.
+ */
 export default async function SectionsListPage(props: SectionsListPageProps) {
   const { bibleId, chapterId } = await props.params;
 
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });
+  //Fetch a single chapter from the `/bibles/{bibleId}/chapters/{chapterId}` endpoint
   const chapter = await makeCachedApiRequest<Chapter>({
     endpoint: `/bibles/${bibleId}/chapters/${chapterId}`,
   });
+  //Fetch full list of sections (if they exist) for the given chapter from the `/bibles/{bibleId}/chapters/{chapterId}/sections` endpoint
   const sections = await makeCachedApiRequest<Section[]>({
     endpoint: `/bibles/${bibleId}/chapters/${chapterId}/sections`,
   }).catch(() => [] as Section[]);

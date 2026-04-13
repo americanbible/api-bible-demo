@@ -8,12 +8,24 @@ import { demoBibles } from "@/utils/demoBibles";
 import { SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 
+/**
+ * Home page of the application. Provides a generic overview of this application, as well as
+ * the list of Bibles this application has access to. The full list of demo bibles can
+ * be found in [demoBibles.ts](../utils/demoBibles.ts).
+ *
+ * See our [Bibles Guide](https://docs.api.bible/guides/bibles) for more.
+ *
+ * *Note: This is the only page of the application that doesn't correlate directly with the URL structure of the API.
+ * Bibles shown here are the result of a call to the `/bibles` endpoint, not the root `/` endpoint.*
+ */
 export default async function HomePage() {
+  //Fetch bibles from the `/bibles` endpoint
   const bibles = await makeCachedApiRequest<Bible[]>({
     endpoint: "/bibles",
     //Only fetch demo bibles
     params: { ids: demoBibles.join(",") },
   });
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex gap-2 items-center mt-4">

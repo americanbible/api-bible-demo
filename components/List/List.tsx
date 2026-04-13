@@ -4,6 +4,9 @@ type ListProps = {
   items: ListItemProps[];
 };
 
+/**
+ * Simple list component for rendering API results
+ */
 export const List = ({ items }: ListProps) => {
   return (
     <div className="flex flex-col gap-2">

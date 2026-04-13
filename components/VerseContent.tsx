@@ -7,6 +7,10 @@ type VerseContentProps = {
   verseContent: VerseContentType;
 };
 
+/**
+ * Renders verse content returned from the API. Leverages the [scripture-styles](https://npmjs.org/package/scripture-styles) `npm`
+ * package for styling.
+ */
 export const VerseContent = ({
   linkBase,
   verseContent: { previous, next, content },

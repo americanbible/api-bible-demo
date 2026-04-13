@@ -9,12 +9,19 @@ type VersePageProps = {
   params: Promise<{ bibleId: string; verseId: string }>;
 };
 
+/**
+ * Single verse page. Renders resulting verse content.
+ *
+ * See our [Verses Guide](https://docs.api.bible/guides/verses) for more.
+ */
 export default async function VersePage(props: VersePageProps) {
   const { bibleId, verseId } = await props.params;
 
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });
+  //Fetch a single verse from the `/bibles/{bibleId}/verses/{verseId}` endpoint
   const verse = await makeCachedApiRequest<VerseWithVerseContent>({
     endpoint: `/bibles/${bibleId}/verses/${verseId}`,
     params: {

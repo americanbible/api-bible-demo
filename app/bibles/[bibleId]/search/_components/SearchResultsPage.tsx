@@ -17,15 +17,24 @@ type SearchResultsPageProps = {
 
 const PAGE_SIZE = 10;
 
+/**
+ * Componentized search results page. Executes a search and lists all content returned.
+ * If a passage is searched, it will display those results properly as well.
+ *
+ * See our [Search Guide](https://docs.api.bible/guides/search) for more.
+ */
 export async function SearchResultsPage({
   bibleId,
   page,
   searchValue,
   searchLink,
 }: SearchResultsPageProps) {
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });
+  //Execute a search with the given query using the `/bibles/{bibleId}/search?query={query}` endpoint
+
   const result = await makeCachedApiRequest<SearchResults>({
     endpoint: `/bibles/${bibleId}/search`,
     params: {

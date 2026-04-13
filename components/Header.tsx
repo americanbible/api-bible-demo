@@ -10,6 +10,12 @@ type HeaderProps = {
   breadcrumbs: BreadcrumbItem[];
 };
 
+/**
+ * Renders a head consisting of the following:
+ *   - Information about the currently selected Bible (name, ID, etc.)
+ *   - Breadcrumbs
+ *   - A page title & subtitle (if provided)
+ */
 export const Header = ({
   bible,
   title,

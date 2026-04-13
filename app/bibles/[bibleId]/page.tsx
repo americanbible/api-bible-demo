@@ -12,8 +12,15 @@ type BiblePageProps = {
   params: Promise<{ bibleId: string }>;
 };
 
+/**
+ * Single Bible page. Renders resulting Bible content as JSON.
+ *
+ * See our [Bibles Guide](https://docs.api.bible/guides/bibles) for more.
+ */
 export default async function BiblePage(props: BiblePageProps) {
   const { bibleId } = await props.params;
+
+  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const bible = await makeCachedApiRequest<Bible>({
     endpoint: `/bibles/${bibleId}`,
   });

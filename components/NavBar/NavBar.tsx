@@ -2,6 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { NavItem } from "./NavItem";
 
+/**
+ * API.Bible nav bar that includes links to other helpful pages
+ */
 export const Navbar = () => {
   return (
     <nav className="relative flex items-center justify-between p-0 shrink-0">
@@ -20,8 +23,11 @@ export const Navbar = () => {
 
           <div className="flex gap-5 shrink-0">
             <div className="flex items-start gap-4">
-              <NavItem href="/" isActive>
-                Demo
+              <NavItem
+                href="https://github.com/americanbible/api-bible-demo"
+                isActive
+              >
+                Source Code
               </NavItem>
               <NavItem href="https://docs.api.bible">Docs</NavItem>
               <NavItem href="https://api.bible/api-reference">

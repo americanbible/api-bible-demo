@@ -8,6 +8,9 @@ type BreadcrumbsProps = {
   items: BreadcrumbItem[];
 };
 
+/**
+ * Simple component for rendering breadcrumbs, allowing users to backtrack as they navigate the site
+ */
 export const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
   return (
     <div className="flex items-center gap-1">

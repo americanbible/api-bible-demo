@@ -5,6 +5,11 @@ type SearchPageProps = {
   searchParams: Promise<{ page: string }>;
 };
 
+/**
+ * Search page. Searches for the word "l?ve", using the single wildcard string, in the Bible and lists the results.
+ *
+ * See our [Search Guide](https://docs.api.bible/guides/search) for more.
+ */
 export default async function NameSearchPage({
   params,
   searchParams,

@@ -1,6 +1,9 @@
 import { LinkButton } from "@/components/LinkButton";
 import { ArrowRight } from "lucide-react";
 
+/**
+ * Generic 404 page
+ */
 export default async function NotFoundPage() {
   return (
     <div className="w-full h-full flex flex-col gap-2 items-center justify-center">
