@@ -30,6 +30,8 @@ export default async function ChapterPage(props: ChapterPageProps) {
     params: {
       "content-type": "html",
       "include-verse-spans": "true",
+      "include-titles": "true",
+      "include-notes": "true",
     },
   });
 

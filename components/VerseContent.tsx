@@ -29,12 +29,17 @@ export const VerseContent = ({
       <ActionList className="justify-center gap-4 mt-4">
         {!!previous?.id && (
           <LinkButton
+            className="w-[150px]"
             href={`${linkBase}/${previous.id}`}
-            title="Previous Verse"
+            title="Previous"
           />
         )}
         {!!next?.id && (
-          <LinkButton href={`${linkBase}/${next.id}`} title="Next Verse" />
+          <LinkButton
+            className="w-[150px]"
+            href={`${linkBase}/${next.id}`}
+            title="Next"
+          />
         )}
       </ActionList>
     </>

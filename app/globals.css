@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Scripture Styles downloaded from: https://github.com/americanbible/scripture-styles */
+@import "../styles/scripture-styles.css";
 
 @tailwind base;
 @tailwind components;
