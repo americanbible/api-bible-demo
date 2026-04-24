@@ -1,9 +1,11 @@
+import { SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 import { ReactNode } from "react";
 
 type LinkButtonProps = {
   title: string;
   href: string;
+  external?: boolean;
   children?: ReactNode;
   className?: string;
 };
@@ -14,16 +16,18 @@ type LinkButtonProps = {
 export const LinkButton = ({
   title,
   href,
+  external,
   children,
   className,
 }: LinkButtonProps) => {
   return (
     <Link
       href={href}
-      className={`py-1 px-4 bg-zinc-800 text-white border-zinc-800 border-1 rounded flex gap-1 items-center justify-center hover:bg-zinc-100 hover:text-black ${className ?? ""}`}
+      className={`h-full flex gap-2 items-center justify-center px-4 py-2 bg-zinc-100 hover:bg-zinc-300 border-black ${className ?? ""}`}
     >
       {children}
-      <span className="text-md ">{title}</span>
+      <span className="text-md text-nowrap">{title}</span>
+      {external && <SquareArrowOutUpRight size={12} />}
     </Link>
   );
 };

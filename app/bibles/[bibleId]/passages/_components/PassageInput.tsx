@@ -15,12 +15,11 @@ export const PassageInput = ({ bibleId }: PassageInputProps) => {
   const [startVerseId, setStartVerseId] = useState<string>("");
   const [endVerseId, setEndVerseId] = useState<string>("");
 
-  const inputClassName =
-    "w-[300px] border-zinc-500 border-2 px-4 py-2 rounded-sm";
+  const inputClassName = "w-[300px]  border-1 px-4 py-2";
 
   return (
-    <div className="flex flex-col gap-4 pt-2 border-t-zinc-200 border-t-1">
-      <p className="text-sm">
+    <div className="flex flex-col gap-4 p-12 border-t-zinc-200 border-b-1">
+      <p>
         Enter two verse IDs below to find a passage. If you are having trouble
         finding verse IDs, check out our{" "}
         <Link className="underline" href="https://docs.api.bible/guides/verses">
@@ -29,7 +28,7 @@ export const PassageInput = ({ bibleId }: PassageInputProps) => {
       </p>
 
       <div className="flex flex-row gap-4">
-        <div className="flex flex-col gap-1">
+        <div className="grow flex flex-col gap-1">
           <h5 className="text-sm font-bold">StartIng Verse ID:</h5>
           <input
             className={inputClassName}
@@ -39,7 +38,7 @@ export const PassageInput = ({ bibleId }: PassageInputProps) => {
           />
         </div>
 
-        <div className="flex flex-col gap-1">
+        <div className="grow flex flex-col gap-1">
           <h5 className="text-sm font-bold">Ending Verse ID:</h5>
           <input
             className={inputClassName}
@@ -55,6 +54,7 @@ export const PassageInput = ({ bibleId }: PassageInputProps) => {
           <LinkButton
             href={`/bibles/${bibleId}/passages/${startVerseId}-${endVerseId}`}
             title="Go to Passage"
+            className="border-1"
           />
         </div>
       )}

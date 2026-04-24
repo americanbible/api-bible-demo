@@ -1,143 +1,96 @@
-import { ActionList } from "@/components/ActionList";
-import { InfoCard } from "@/components/InfoCard";
+import { ActionSection } from "@/components/sections/ActionSection";
+import { HeaderSection } from "@/components/sections/HeaderSection";
+import { InfoSection } from "@/components/sections/InfoSection";
 import { LinkButton } from "@/components/LinkButton";
-import { List } from "@/components/List";
-import { Bible } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
-import { demoBibles } from "@/utils/demoBibles";
-import { SquareArrowOutUpRight } from "lucide-react";
+import { TextSection } from "@/components/sections/TextSection";
+import { BookOpenText } from "lucide-react";
 import Link from "next/link";
 
 /**
- * Home page of the application. Provides a generic overview of this application, as well as
- * the list of Bibles this application has access to. The full list of demo bibles can
- * be found in [demoBibles.ts](../utils/demoBibles.ts).
- *
- * See our [Bibles Guide](https://docs.api.bible/guides/bibles) for more.
- *
- * *Note: This is the only page of the application that doesn't correlate directly with the URL structure of the API.
- * Bibles shown here are the result of a call to the `/bibles` endpoint, not the root `/` endpoint.*
- */
+ * Home page of the application. */
 export default async function HomePage() {
-  //Fetch bibles from the `/bibles` endpoint
-  const bibles = await makeCachedApiRequest<Bible[]>({
-    endpoint: "/bibles",
-    //Only fetch demo bibles
-    params: { ids: demoBibles.join(",") },
-  });
-
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex gap-2 items-center mt-4">
-        <h1 className="font-bold text-4xl">API.Bible NextJS Demo</h1>
-      </div>
-      <InfoCard
-        title="Welcome!"
+    <div className="flex flex-col">
+      <HeaderSection
+        title="API.Bible NextJS Demo"
+        breadcrumbs={[
+          {
+            title: "Home",
+            href: "/",
+          },
+        ]}
+      />
+
+      <TextSection>
+        <h3 className="text-2xl font-bold">WELCOME.</h3>
+        <p>
+          Welcome to the API.Bible NextJS Demo application! This app was built
+          to be a tool you can use to see in real-time how our API functions.
+          The URL structure is intended to match that of our API to help you get
+          familiar with how Bible data is queried. Along with the accompanying
+          API results, each page will include a quick guide to querying the data
+          that is being shown. If you want more details about our platform, be
+          sure to check out our{" "}
+          <Link href="https://docs.api.bible" className="underline">
+            documentation
+          </Link>
+          .
+        </p>
+        <p className="text-sm">
+          If you are interested in seeing how this application is built, check
+          out our public{" "}
+          <Link
+            href="https://github.com/americanbible/api-bible-demo"
+            className="underline"
+          >
+            GitHub repository
+          </Link>
+          .
+        </p>
+      </TextSection>
+      <InfoSection
+        title="What is API.Bible?"
+        url="https://api.bible"
         info={
           <>
-            <p>
-              Welcome to the API.Bible NextJS Demo application! This app was
-              built to be a tool you can use to see in real-time how our API
-              functions. The URL structure is intended to match that of our API
-              to help you get familiar with how Bible data is queried. Along
-              with the accompanying API results, each page will include a quick
-              guide to querying the data that is being shown. If you want more
-              details about our platform, be sure to check out our{" "}
-              <Link href="https://docs.api.bible" className="underline">
-                documentation
-              </Link>
-              . Click a Bible below to get started.
+            <p className="text-sm">
+              API.Bible is a tool for developers that{" "}
+              <b>provides access to a massive catalog of Bibles</b>, including
+              popular translations like NIV, NKJV, NASB, The Message, CST, NLT,
+              The Amplified Bible, GNT, and more,{" "}
+              <b>through a fully-fledged API.</b>
             </p>
             <p className="text-sm mt-2">
-              If you are interested in seeing how this application is built,
-              check out our public{" "}
-              <Link
-                href="https://github.com/americanbible/api-bible-demo"
-                className="underline"
-              >
-                GitHub repository
-              </Link>
-              .
+              Historically, licensing Bibles has been a difficult and
+              time-consuming process that had to be repeated for every
+              translation required. API.Bible solves this hurdle for digital
+              Bible use. We have collaborated with dozens of IP holders and
+              gathered a massive catalogue of open access Bibles to provide you
+              with{" "}
+              <b>
+                everything you need to get the Bible into your app, all under a
+                single license.
+              </b>
             </p>
           </>
         }
       />
+      <TextSection>
+        <p>
+          We hope this is a helpful tool for familiarizing yourself with
+          API.Bible. To get started with the demo, click the button below:
+        </p>
+      </TextSection>
 
-      <ActionList>
+      <div className="w-full flex justify-center border-black border-b-1">
         <LinkButton
-          title="View Docs"
-          href="https://docs.api.bible"
-          className="flex-row-reverse"
+          title="Expore the Demo"
+          href="/bibles"
+          className="border-x-[1px] text-lg gap-4"
         >
-          <SquareArrowOutUpRight size={12} className="ml-1" />
+          <BookOpenText size={16} />
         </LinkButton>
-
-        <LinkButton
-          title="View Source Code"
-          href="https://github.com/americanbible/api-bible-demo"
-          className="flex-row-reverse"
-        >
-          <SquareArrowOutUpRight size={12} className="ml-1" />
-        </LinkButton>
-
-        <LinkButton
-          title="Visit API.Bible"
-          href="https://api.bible"
-          className="flex-row-reverse"
-        >
-          <SquareArrowOutUpRight size={12} className="ml-1" />
-        </LinkButton>
-      </ActionList>
-
-      <div className="flex gap-2 items-center mt-4">
-        <h1 className="font-bold text-2xl">Available Bibles</h1>
-        <h5 className="text-lg text-zinc-500 mt-[2px]">({bibles.length})</h5>
       </div>
-      <InfoCard
-        title="Fetching Your Available Bibles"
-        url="https://rest.api.bible/v1/bibles"
-        info={
-          <>
-            <p className="mb-2">
-              To fetch your list of available Bibles, you must send a{" "}
-              <code className="font-bold">GET</code> request to the above API
-              endpoint. This will return a list of every Bible you have access
-              to via API.Bible. This includes all Public Domain and Creative
-              Commons versions, as well as any Bibles licensed through a{" "}
-              <b>Pro Plan</b> subscription. For more information, check out our{" "}
-              <Link
-                href="https://docs.api.bible/guides/bibles"
-                className="underline"
-              >
-                Bibles Guide.
-              </Link>
-            </p>
-            <p className="text-sm">
-              Tip: Bible availability via API.Bible depends on your chosen plan.
-              The <b>Starter Plan</b> provides access to Public Domain and
-              Creative Commons versions, while the <b>Pro Plan</b> may include
-              additional licensed translations. See our{" "}
-              <Link href="https://api.bible/bibles" className="underline">
-                Bible Versions Table.
-              </Link>{" "}
-              for more information.
-            </p>
-          </>
-        }
-      />
-
-      <List
-        items={bibles.map((bible) => ({
-          title: (
-            <p>
-              <span className="font-bold">{bible.name}</span> (
-              {bible.abbreviation})
-            </p>
-          ),
-          href: `/bibles/${bible.id}`,
-          info: bible.id,
-        }))}
-      />
     </div>
   );
 }

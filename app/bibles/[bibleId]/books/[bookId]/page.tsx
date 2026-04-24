@@ -1,12 +1,14 @@
-import { Header } from "@/components/Header";
+import { HeaderSection } from "@/components/sections/HeaderSection";
 import { LinkButton } from "@/components/LinkButton";
 import { Bible, Book } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { Book as BookIcon } from "lucide-react";
-import { InfoCard } from "@/components/InfoCard";
+import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
-import { ActionList } from "@/components/ActionList";
-import { JSONContent } from "@/components/JSONContent";
+import { ActionSection } from "@/components/sections/ActionSection";
+import { JSONSection } from "@/components/sections/JSONSection";
+import { BibleSection } from "@/components/sections/BibleSection";
+import { Page } from "@/components/Page";
 
 type BookPageProps = {
   params: Promise<{ bibleId: string; bookId: string }>;
@@ -31,15 +33,17 @@ export default async function BookPage(props: BookPageProps) {
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title={book.name}
-        subtitle={book.id}
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -55,7 +59,7 @@ export default async function BookPage(props: BookPageProps) {
           },
         ]}
       />
-      <InfoCard
+      <InfoSection
         title="Fetching a Single Book"
         url="https://rest.api.bible/v1/bibles/{bibleId}/books/{bookId}"
         info={
@@ -86,10 +90,12 @@ export default async function BookPage(props: BookPageProps) {
           </>
         }
       />
-      <ActionList>
+      <BibleSection bible={bible} />
+      <ActionSection>
         <LinkButton
           title="View Chapters"
           href={`/bibles/${bibleId}/books/${bookId}/chapters`}
+          className="grow border-r-[1px]"
         >
           <BookIcon size={16} />
         </LinkButton>
@@ -97,15 +103,16 @@ export default async function BookPage(props: BookPageProps) {
         <LinkButton
           title="View Sections"
           href={`/bibles/${bibleId}/books/${bookId}/sections`}
+          className="grow"
         >
           <BookIcon size={16} />
         </LinkButton>
-      </ActionList>
+      </ActionSection>
 
-      <JSONContent
+      <JSONSection
         //Truncate chapter display to reduce page clutter
         json={{ ...book, chapters: `Array(${book.chapters.length})` }}
       />
-    </div>
+    </Page>
   );
 }

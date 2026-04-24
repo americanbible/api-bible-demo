@@ -1,12 +1,14 @@
-import { Header } from "@/components/Header";
-import { VerseContent } from "@/components/VerseContent";
+import { HeaderSection } from "@/components/sections/HeaderSection";
+import { VerseContentSection } from "@/components/sections/VerseContentSection";
 import { LinkButton } from "@/components/LinkButton";
 import { Bible, ChapterWithVerseContent } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { BookIcon, TextInitial } from "lucide-react";
-import { ActionList } from "@/components/ActionList";
+import { ActionSection } from "@/components/sections/ActionSection";
 import Link from "next/link";
-import { InfoCard } from "@/components/InfoCard";
+import { InfoSection } from "@/components/sections/InfoSection";
+import { BibleSection } from "@/components/sections/BibleSection";
+import { Page } from "@/components/Page";
 
 type ChapterPageProps = {
   params: Promise<{ bibleId: string; chapterId: string }>;
@@ -36,15 +38,17 @@ export default async function ChapterPage(props: ChapterPageProps) {
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title={chapter.reference}
-        subtitle={chapter.id}
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -60,7 +64,7 @@ export default async function ChapterPage(props: ChapterPageProps) {
         ]}
       />
 
-      <InfoCard
+      <InfoSection
         title="Fetching a Single Chapter"
         url="https://rest.api.bible/v1/bibles/{bibleId}/chapters/{chapterId}"
         info={
@@ -94,10 +98,12 @@ export default async function ChapterPage(props: ChapterPageProps) {
           </>
         }
       />
-      <ActionList>
+      <BibleSection bible={bible} />
+      <ActionSection>
         <LinkButton
           title="View Verses"
           href={`/bibles/${bibleId}/chapters/${chapterId}/verses`}
+          className="grow border-r-[1px]"
         >
           <TextInitial size={16} />
         </LinkButton>
@@ -105,15 +111,17 @@ export default async function ChapterPage(props: ChapterPageProps) {
         <LinkButton
           title="View Sections"
           href={`/bibles/${bibleId}/chapters/${chapterId}/sections`}
+          className="grow"
         >
           <BookIcon size={16} />
         </LinkButton>
-      </ActionList>
+      </ActionSection>
 
-      <VerseContent
+      <VerseContentSection
         linkBase={`/bibles/${bibleId}/chapters`}
         verseContent={chapter}
+        title={chapter.id}
       />
-    </div>
+    </Page>
   );
 }

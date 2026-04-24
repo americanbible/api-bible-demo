@@ -1,6 +1,8 @@
-import { Header } from "@/components/Header";
-import { InfoCard } from "@/components/InfoCard";
-import { VerseContent } from "@/components/VerseContent";
+import { Page } from "@/components/Page";
+import { BibleSection } from "@/components/sections/BibleSection";
+import { HeaderSection } from "@/components/sections/HeaderSection";
+import { InfoSection } from "@/components/sections/InfoSection";
+import { VerseContentSection } from "@/components/sections/VerseContentSection";
 import { Bible, VerseWithVerseContent } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import Link from "next/link";
@@ -31,15 +33,17 @@ export default async function VersePage(props: VersePageProps) {
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title={verse.reference}
-        subtitle={verse.id}
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -55,7 +59,7 @@ export default async function VersePage(props: VersePageProps) {
         ]}
       />
 
-      <InfoCard
+      <InfoSection
         title="Fetching a Single Verse"
         url="https://rest.api.bible/v1/bibles/{bibleId}/verses/{verseId}"
         info={
@@ -87,12 +91,12 @@ export default async function VersePage(props: VersePageProps) {
           </>
         }
       />
-      <div className="w-full pb-4 border-zinc-200 border-b-1" />
-
-      <VerseContent
+      <BibleSection bible={bible} />
+      <VerseContentSection
         linkBase={`/bibles/${bibleId}/verses`}
         verseContent={verse}
+        title={verse.id}
       />
-    </div>
+    </Page>
   );
 }

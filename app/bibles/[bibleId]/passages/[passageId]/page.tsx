@@ -1,5 +1,8 @@
-import { Header } from "@/components/Header";
-import { InfoCard } from "@/components/InfoCard";
+import { Page } from "@/components/Page";
+import { BibleSection } from "@/components/sections/BibleSection";
+import { HeaderSection } from "@/components/sections/HeaderSection";
+import { InfoSection } from "@/components/sections/InfoSection";
+import { VerseContentSection } from "@/components/sections/VerseContentSection";
 import { Bible, Passage } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import Link from "next/link";
@@ -35,15 +38,17 @@ export default async function PassagePage(props: PassagePageProps) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title={passage.reference}
-        subtitle={passage.id}
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -59,7 +64,7 @@ export default async function PassagePage(props: PassagePageProps) {
           },
         ]}
       />
-      <InfoCard
+      <InfoSection
         title="Fetching a Passage"
         url="https://rest.api.bible/v1/bibles/{bibleId}/passages/{passageId}"
         info={
@@ -99,15 +104,12 @@ export default async function PassagePage(props: PassagePageProps) {
         }
       />
 
-      <div className="w-full pb-4 border-zinc-200 border-b-1" />
-      <div className="w-full flex flex-col items-center">
-        <div className="max-w-[60vw]">
-          <div
-            className="scripture-styles"
-            dangerouslySetInnerHTML={{ __html: passage.content }}
-          />
-        </div>
-      </div>
-    </div>
+      <BibleSection bible={bible} />
+      <VerseContentSection
+        title={passage.id}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        verseContent={passage as any}
+      />
+    </Page>
   );
 }

@@ -15,7 +15,7 @@ export const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
   return (
     <div className="flex items-center gap-1">
       {items.map(({ title, href }, i) => (
-        <React.Fragment key={title}>
+        <React.Fragment key={title + i}>
           {!!href ? (
             <Link href={href} className="text-sm hover:underline">
               {title}
@@ -23,7 +23,9 @@ export const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
           ) : (
             <p className="text-sm">{title}</p>
           )}
-          {i !== items.length - 1 && <ChevronRight size={12} />}
+          {(i !== items.length - 1 || items.length === 1) && (
+            <ChevronRight size={12} />
+          )}
         </React.Fragment>
       ))}
     </div>

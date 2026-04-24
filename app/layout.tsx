@@ -36,14 +36,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${ubuntu.className} h-full antialiased max-w-[100vw]`}
+      className={`${ubuntu.className} min-h-full antialiased w-[100vw] `}
       suppressHydrationWarning
     >
-      <body className="w-full min-h-full flex flex-col gap-4 p-4 sm:p-8">
-        <Suspense fallback={<PageLoader />}>
-          <Navbar />
-          {children}
-        </Suspense>
+      <body className="w-full h-full flex flex-col items-center">
+        <div className="max-w-[800px] flex flex-col border-black border-l-[1px] border-r-[1px] pb-[20vh]">
+          <Suspense fallback={<PageLoader />}>
+            <Navbar />
+            {children}
+          </Suspense>
+        </div>
       </body>
     </html>
   );

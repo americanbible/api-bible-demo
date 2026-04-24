@@ -1,9 +1,11 @@
-import { Header } from "@/components/Header";
+import { HeaderSection } from "@/components/sections/HeaderSection";
 import { Bible } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { PassageInput } from "./_components/PassageInput";
-import { InfoCard } from "@/components/InfoCard";
+import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
+import { Page } from "@/components/Page";
+import { BibleSection } from "@/components/sections/BibleSection";
 
 type SectionPageProps = {
   params: Promise<{ bibleId: string }>;
@@ -25,14 +27,17 @@ export default async function SectionPage(props: SectionPageProps) {
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title="Find Passages"
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -45,7 +50,7 @@ export default async function SectionPage(props: SectionPageProps) {
         ]}
       />
 
-      <InfoCard
+      <InfoSection
         title="Finding Passages"
         info={
           <>
@@ -77,8 +82,8 @@ export default async function SectionPage(props: SectionPageProps) {
           </>
         }
       />
-
+      <BibleSection bible={bible} />
       <PassageInput bibleId={bibleId} />
-    </div>
+    </Page>
   );
 }

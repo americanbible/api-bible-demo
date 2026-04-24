@@ -1,12 +1,14 @@
-import { ActionList } from "@/components/ActionList";
-import { Header } from "@/components/Header";
-import { InfoCard } from "@/components/InfoCard";
-import { JSONContent } from "@/components/JSONContent";
+import { ActionSection } from "@/components/sections/ActionSection";
+import { HeaderSection } from "@/components/sections/HeaderSection";
+import { InfoSection } from "@/components/sections/InfoSection";
+import { JSONSection } from "@/components/sections/JSONSection";
 import { LinkButton } from "@/components/LinkButton";
+import { BibleSection } from "@/components/sections/BibleSection";
 import { Bible } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { Book, BookText, Search } from "lucide-react";
 import Link from "next/link";
+import { Page } from "@/components/Page";
 
 type BiblePageProps = {
   params: Promise<{ bibleId: string }>;
@@ -26,9 +28,8 @@ export default async function BiblePage(props: BiblePageProps) {
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title="Bible Info"
         breadcrumbs={[
           {
@@ -36,12 +37,16 @@ export default async function BiblePage(props: BiblePageProps) {
             href: "/",
           },
           {
+            title: "Bibles",
+            href: "/bibles",
+          },
+          {
             title: bible.name,
             href: `/bibles/${bibleId}`,
           },
         ]}
       />
-      <InfoCard
+      <InfoSection
         title="Fetching Bible Info"
         url="https://rest.api.bible/v1/bibles/{bibleId}"
         info={
@@ -72,20 +77,33 @@ export default async function BiblePage(props: BiblePageProps) {
           </>
         }
       />
+      <BibleSection bible={bible} />
 
-      <ActionList>
-        <LinkButton title="View Books" href={`/bibles/${bible.id}/books`}>
+      <ActionSection>
+        <LinkButton
+          title="View Books"
+          href={`/bibles/${bible.id}/books`}
+          className="grow border-r-[1px]"
+        >
           <Book size={16} />
         </LinkButton>
-        <LinkButton title="Find Passages" href={`/bibles/${bible.id}/passages`}>
+        <LinkButton
+          title="Find Passages"
+          href={`/bibles/${bible.id}/passages`}
+          className="grow border-r-[1px]"
+        >
           <BookText size={16} />
         </LinkButton>
-        <LinkButton title="Search" href={`/bibles/${bible.id}/search`}>
+        <LinkButton
+          title="Search"
+          href={`/bibles/${bible.id}/search`}
+          className="grow"
+        >
           <Search size={16} />
         </LinkButton>
-      </ActionList>
+      </ActionSection>
 
-      <JSONContent json={bible} />
-    </div>
+      <JSONSection json={bible} />
+    </Page>
   );
 }

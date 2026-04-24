@@ -1,11 +1,14 @@
-import { Header } from "@/components/Header";
+import { HeaderSection } from "@/components/sections/HeaderSection";
 import { Bible } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { LinkButton } from "@/components/LinkButton";
 import { Search } from "lucide-react";
-import { ActionList } from "@/components/ActionList";
-import { InfoCard } from "@/components/InfoCard";
+import { ActionSection } from "@/components/sections/ActionSection";
+import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
+import { BibleSection } from "@/components/sections/BibleSection";
+import { TextSection } from "@/components/sections/TextSection";
+import { Page } from "@/components/Page";
 
 type SearchPageProps = {
   params: Promise<{ bibleId: string }>;
@@ -34,14 +37,17 @@ export default async function SearchPage(props: SearchPageProps) {
   ];
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title="Search"
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -54,7 +60,7 @@ export default async function SearchPage(props: SearchPageProps) {
         ]}
       />
 
-      <InfoCard
+      <InfoSection
         title="How To Search"
         info={
           <>
@@ -88,24 +94,27 @@ export default async function SearchPage(props: SearchPageProps) {
           </>
         }
       />
-
-      <ActionList>
-        {values.map(([value, href]) => (
+      <BibleSection bible={bible} />
+      <ActionSection>
+        {values.map(([value, href], i) => (
           <LinkButton
             key={value}
             href={`/bibles/${bibleId}/search/${href}`}
             title={`Search "${value}"`}
+            className={`grow ${i !== values.length - 1 ? "border-r-[1px]" : ""}`}
           >
             <Search size={16} className="mr-1" />
           </LinkButton>
         ))}
-      </ActionList>
+      </ActionSection>
 
-      <p className="text-sm">
-        To avoid API abuse, our search demo is currently limited to a predefined
-        set of search values. Click one of the above options to test our search
-        feature.
-      </p>
-    </div>
+      <TextSection>
+        <p>
+          To avoid API abuse, our search demo is currently limited to a
+          predefined set of search values. Click one of the above options to
+          test our search feature.
+        </p>
+      </TextSection>
+    </Page>
   );
 }

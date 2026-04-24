@@ -1,6 +1,8 @@
-import { Header } from "@/components/Header";
-import { InfoCard } from "@/components/InfoCard";
-import { List } from "@/components/List";
+import { Page } from "@/components/Page";
+import { BibleSection } from "@/components/sections/BibleSection";
+import { HeaderSection } from "@/components/sections/HeaderSection";
+import { InfoSection } from "@/components/sections/InfoSection";
+import { ListSection } from "@/components/sections/ListSection";
 import { Bible, Book, Chapter } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import Link from "next/link";
@@ -31,15 +33,17 @@ export default async function ChaptersListPage(props: ChaptersListPageProps) {
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title={`${book.name} Chapters`}
-        subtitle={`${chapters.length}`}
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -60,7 +64,7 @@ export default async function ChaptersListPage(props: ChaptersListPageProps) {
           },
         ]}
       />
-      <InfoCard
+      <InfoSection
         title="Fetching Chapters of a Book"
         url="https://rest.api.bible/v1/bibles/{bibleId}/books/{bookId}/chapters"
         info={
@@ -94,19 +98,19 @@ export default async function ChaptersListPage(props: ChaptersListPageProps) {
           </>
         }
       />
-      <List
+      <BibleSection bible={bible} />
+      <ListSection
+        title="Chapters"
         items={chapters.map((chapter) => ({
           title: (
-            <p>
-              <span className="font-bold">
-                {book.name} {chapter.number}
-              </span>{" "}
-              ({chapter.id})
+            <p className="font-bold">
+              {book.name} {chapter.number}
             </p>
           ),
+          info: chapter.id,
           href: `/bibles/${bibleId}/chapters/${chapter.id}`,
         }))}
       />
-    </div>
+    </Page>
   );
 }

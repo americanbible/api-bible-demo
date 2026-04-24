@@ -1,9 +1,11 @@
-import { Header } from "@/components/Header";
-import { InfoCard } from "@/components/InfoCard";
-import { List } from "@/components/List";
+import { HeaderSection } from "@/components/sections/HeaderSection";
+import { InfoSection } from "@/components/sections/InfoSection";
+import { ListSection } from "@/components/sections/ListSection";
 import { Section, Bible, Book } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import Link from "next/link";
+import { BibleSection } from "@/components/sections/BibleSection";
+import { Page } from "@/components/Page";
 
 type SectionsListPageProps = {
   params: Promise<{ bibleId: string; bookId: string }>;
@@ -33,15 +35,17 @@ export default async function BookSectionsListPage(
   }).catch(() => [] as Section[]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title={`${book.name} Sections`}
-        subtitle={`${sections.length}`}
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -62,7 +66,7 @@ export default async function BookSectionsListPage(
           },
         ]}
       />
-      <InfoCard
+      <InfoSection
         title="Fetching Sections in a Book"
         url="https://rest.api.bible/v1/bibles/{bibleId}/books/{bookId}/sections"
         info={
@@ -96,7 +100,8 @@ export default async function BookSectionsListPage(
           </>
         }
       />
-      <List
+      <BibleSection bible={bible} />
+      <ListSection
         items={sections.map((section) => ({
           title: (
             <p>
@@ -107,6 +112,6 @@ export default async function BookSectionsListPage(
           info: `${section.firstVerseId} - ${section.lastVerseId}`,
         }))}
       />
-    </div>
+    </Page>
   );
 }

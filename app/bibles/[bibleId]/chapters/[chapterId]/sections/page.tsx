@@ -1,6 +1,8 @@
-import { Header } from "@/components/Header";
-import { InfoCard } from "@/components/InfoCard";
-import { List } from "@/components/List";
+import { Page } from "@/components/Page";
+import { BibleSection } from "@/components/sections/BibleSection";
+import { HeaderSection } from "@/components/sections/HeaderSection";
+import { InfoSection } from "@/components/sections/InfoSection";
+import { ListSection } from "@/components/sections/ListSection";
 import { Bible, Chapter, Section } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import Link from "next/link";
@@ -31,14 +33,17 @@ export default async function SectionsListPage(props: SectionsListPageProps) {
   }).catch(() => [] as Section[]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title={`${chapter.reference} Sections`}
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -55,7 +60,7 @@ export default async function SectionsListPage(props: SectionsListPageProps) {
         ]}
       />
 
-      <InfoCard
+      <InfoSection
         title="Fetching Sections in a Chapter"
         url="https://rest.api.bible/v1/bibles/{bibleId}/chapters/{chapterId}/sections"
         info={
@@ -89,7 +94,9 @@ export default async function SectionsListPage(props: SectionsListPageProps) {
           </>
         }
       />
-      <List
+      <BibleSection bible={bible} />
+      <ListSection
+        title="Sections"
         items={sections.map((section) => ({
           title: (
             <p>
@@ -100,6 +107,6 @@ export default async function SectionsListPage(props: SectionsListPageProps) {
           info: `${section.firstVerseId} - ${section.lastVerseId}`,
         }))}
       />
-    </div>
+    </Page>
   );
 }

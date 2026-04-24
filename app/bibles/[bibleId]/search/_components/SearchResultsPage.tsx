@@ -1,12 +1,15 @@
-import { Header } from "@/components/Header";
-import { List } from "@/components/List";
+import { HeaderSection } from "@/components/sections/HeaderSection";
+import { ListSection } from "@/components/sections/ListSection";
 import { LinkButton } from "@/components/LinkButton";
 import { Bible, SearchResults } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { ActionList } from "@/components/ActionList";
+import { ActionSection } from "@/components/sections/ActionSection";
 import Link from "next/link";
-import { InfoCard } from "@/components/InfoCard";
+import { InfoSection } from "@/components/sections/InfoSection";
+import { BibleSection } from "@/components/sections/BibleSection";
+import { Page } from "@/components/Page";
+import { Spacer } from "@/components/Spacer";
 
 type SearchResultsPageProps = {
   bibleId: string;
@@ -51,51 +54,35 @@ export async function SearchResultsPage({
     const nextButtonVisible = result.verses?.length === PAGE_SIZE;
 
     return (
-      <div className="flex flex-col gap-4">
+      <Page>
         <SearchResultHeader
           bible={bible}
           searchLink={searchLink}
           searchValue={searchValue}
         />
-        <div className="flex flex-col">
-          <p>
-            Search Query: <b>{`"${searchValue}"`}</b>
-          </p>
-          <p>
-            Showing{" "}
-            <b>
-              {offset + 1}-{offset + 10 > total ? total : offset + 10}
-            </b>{" "}
-            of <b>{total}</b> result(s).
-          </p>
+        <div className="flex border-b-[1px] ">
+          <Spacer />
+          <div className="flex flex-col border-r-[1px] px-4 py-2">
+            <p>
+              Search Query: <b>{`"${searchValue}"`}</b>
+            </p>
+            <p>
+              Showing{" "}
+              <b>
+                {offset + 1}-{offset + 10 > total ? total : offset + 10}
+              </b>{" "}
+              of <b>{total}</b> result(s).
+            </p>
+          </div>
         </div>
-
-        <ActionList>
-          {previousButtonVisible && (
-            <LinkButton
-              title="Previous Page"
-              href={`/bibles/${bibleId}/search/${searchLink}?page=${page - 1}`}
-            >
-              <ArrowLeft size={16} />
-            </LinkButton>
-          )}
-          {nextButtonVisible && (
-            <LinkButton
-              title="Next Page"
-              href={`/bibles/${bibleId}/search/${searchLink}?page=${page + 1}`}
-              className="flex-row-reverse"
-            >
-              <ArrowRight size={16} />
-            </LinkButton>
-          )}
-        </ActionList>
 
         <div className="flex flex-col gap-4">
           {!result.verses?.length && (
             <p className="self-center justify-self-center">No results found.</p>
           )}
           {!!result.verses?.length && (
-            <List
+            <ListSection
+              hideHeader
               items={result.verses.map((verse) => ({
                 title: (
                   <div className="flex flex-col pb-2">
@@ -103,53 +90,82 @@ export async function SearchResultsPage({
                     <p>{verse.text}</p>
                   </div>
                 ),
+                info: verse.id,
                 href: `/bibles/${bibleId}/verses/${verse.id}`,
               }))}
             />
           )}
         </div>
-      </div>
+
+        <ActionSection>
+          {previousButtonVisible ? (
+            <LinkButton
+              title="Previous Page"
+              href={`/bibles/${bibleId}/search/${searchLink}?page=${page - 1}`}
+              className="grow border-r-[1px]"
+            >
+              <ArrowLeft size={16} />
+            </LinkButton>
+          ) : (
+            <div className="grow h-full border-r-[1px]" />
+          )}
+          {nextButtonVisible ? (
+            <LinkButton
+              title="Next Page"
+              href={`/bibles/${bibleId}/search/${searchLink}?page=${page + 1}`}
+              className="flex-row-reverse grow"
+            >
+              <ArrowRight size={16} />
+            </LinkButton>
+          ) : (
+            <div className="grow" />
+          )}
+        </ActionSection>
+      </Page>
     );
   } else {
     return (
-      <div className="flex flex-col gap-4">
+      <Page>
         <SearchResultHeader
           bible={bible}
           searchLink={searchLink}
           searchValue={searchValue}
         />
-        <div className="flex flex-col">
-          <p>
-            Search Query: <b>{`"${searchValue}"`}</b>
-          </p>
-          <p>
-            Showing <b>{result.passages.length}</b> result(s).
-          </p>
+        <div className="flex border-b-[1px]">
+          <Spacer />
+          <div className="flex flex-col border-r-[1px] px-4 py-2">
+            <p>
+              Search Query: <b>{`"${searchValue}"`}</b>
+            </p>
+            <p>
+              Showing <b>{result.passages.length}</b> result(s).
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-col gap-4 pt-4 border-t-zinc-200 border-t-1">
-          {!!result.passages?.length && (
-            <>
-              <List
-                items={result.passages.map((passage) => ({
-                  title: (
-                    <div className="flex flex-col pb-2">
-                      <p className="text-sm">
-                        <b>{passage.reference}</b> ({passage.id})
-                      </p>
-                      <div
-                        className="scripture-styles"
-                        dangerouslySetInnerHTML={{ __html: passage.content }}
-                      />
-                    </div>
-                  ),
-                  href: `/bibles/${bibleId}/passages/${passage.id}`,
-                }))}
-              />
-            </>
-          )}
-        </div>
-      </div>
+        {!!result.passages?.length && (
+          <>
+            <ListSection
+              hideHeader
+              items={result.passages.map((passage) => ({
+                title: (
+                  <div className="flex flex-col pb-2">
+                    <p className="text-sm">
+                      <b>{passage.reference}</b>
+                    </p>
+                    <div
+                      className="scripture-styles"
+                      dangerouslySetInnerHTML={{ __html: passage.content }}
+                    />
+                  </div>
+                ),
+                info: passage.id,
+                href: `/bibles/${bibleId}/passages/${passage.id}`,
+              }))}
+            />
+          </>
+        )}
+      </Page>
     );
   }
 }
@@ -166,13 +182,16 @@ const SearchResultHeader = ({
 }: SearchResultHeaderProps) => {
   return (
     <>
-      <Header
-        bible={bible}
+      <HeaderSection
         title="Search"
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -188,7 +207,7 @@ const SearchResultHeader = ({
           },
         ]}
       />
-      <InfoCard
+      <InfoSection
         title="Searching a Bible"
         url="https://rest.api.bible/v1/bibles/{bibleId}/search?query={query}"
         info={
@@ -223,6 +242,7 @@ const SearchResultHeader = ({
           </>
         }
       />
+      <BibleSection bible={bible} />
     </>
   );
 };

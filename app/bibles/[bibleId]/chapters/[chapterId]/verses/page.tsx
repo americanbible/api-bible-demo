@@ -1,6 +1,8 @@
-import { Header } from "@/components/Header";
-import { InfoCard } from "@/components/InfoCard";
-import { List } from "@/components/List";
+import { Page } from "@/components/Page";
+import { BibleSection } from "@/components/sections/BibleSection";
+import { HeaderSection } from "@/components/sections/HeaderSection";
+import { InfoSection } from "@/components/sections/InfoSection";
+import { ListSection } from "@/components/sections/ListSection";
 import { Bible, Chapter, Verse } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import Link from "next/link";
@@ -31,15 +33,17 @@ export default async function VersesListPage(props: VersesListPageProps) {
   });
 
   return (
-    <div className="flex flex-col gap-4">
-      <Header
-        bible={bible}
+    <Page>
+      <HeaderSection
         title={`${chapter.reference} Verses`}
-        subtitle={`${verses.length}`}
         breadcrumbs={[
           {
             title: "Home",
             href: "/",
+          },
+          {
+            title: "Bibles",
+            href: "/bibles",
           },
           {
             title: bible.name,
@@ -55,7 +59,7 @@ export default async function VersesListPage(props: VersesListPageProps) {
           },
         ]}
       />
-      <InfoCard
+      <InfoSection
         title="Fetching Verses in a Chapter"
         url="https://rest.api.bible/v1/bibles/{bibleId}/chapters/{chapterId}/verses"
         info={
@@ -87,16 +91,15 @@ export default async function VersesListPage(props: VersesListPageProps) {
           </>
         }
       />
-      <List
+      <BibleSection bible={bible} />
+      <ListSection
+        title="Verses"
         items={verses.map((verse) => ({
-          title: (
-            <p>
-              <span className="font-bold">{verse.reference}</span> ({verse.id})
-            </p>
-          ),
+          title: <p className="font-bold">{verse.reference}</p>,
+          info: verse.id,
           href: `/bibles/${bibleId}/verses/${verse.id}`,
         }))}
       />
-    </div>
+    </Page>
   );
 }
