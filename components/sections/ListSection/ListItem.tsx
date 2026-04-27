@@ -14,11 +14,11 @@ export const ListItem = ({ title, href, info }: ListItemProps) => {
   return (
     <Link
       href={href}
-      className="min-w-[100px] flex justify-between items-center gap-2 bg-zinc-100 hover:bg-zinc-200 p-4 border-black border-b-[1px]"
+      className="min-w-[100px] p-4 flex justify-between items-center gap-2 bg-[#f1f7fe] hover:bg-[#2563eb] hover:text-white border-[#2563eb] group border-b-[1px]"
     >
       <div className="flex flex-col">
         {title}
-        <p className="text-sm text-zinc-500">
+        <p className="text-sm text-zinc-500 group-hover:text-zinc-200">
           {!!info ? info : "Click to view"}
         </p>
       </div>

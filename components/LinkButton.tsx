@@ -23,7 +23,7 @@ export const LinkButton = ({
   return (
     <Link
       href={href}
-      className={`h-full flex gap-2 items-center justify-center px-4 py-2 bg-zinc-100 hover:bg-zinc-300 border-black ${className ?? ""}`}
+      className={`h-full flex gap-2 items-center justify-center px-4 py-2 bg-[#f1f7fe] hover:bg-[#2563eb] hover:text-white border-[#2563eb] ${className ?? ""}`}
     >
       {children}
       <span className="text-md text-nowrap">{title}</span>

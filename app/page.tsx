@@ -1,4 +1,3 @@
-import { ActionSection } from "@/components/sections/ActionSection";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { LinkButton } from "@/components/LinkButton";
@@ -20,34 +19,6 @@ export default async function HomePage() {
           },
         ]}
       />
-
-      <TextSection>
-        <h3 className="text-2xl font-bold">WELCOME.</h3>
-        <p>
-          Welcome to the API.Bible NextJS Demo application! This app was built
-          to be a tool you can use to see in real-time how our API functions.
-          The URL structure is intended to match that of our API to help you get
-          familiar with how Bible data is queried. Along with the accompanying
-          API results, each page will include a quick guide to querying the data
-          that is being shown. If you want more details about our platform, be
-          sure to check out our{" "}
-          <Link href="https://docs.api.bible" className="underline">
-            documentation
-          </Link>
-          .
-        </p>
-        <p className="text-sm">
-          If you are interested in seeing how this application is built, check
-          out our public{" "}
-          <Link
-            href="https://github.com/americanbible/api-bible-demo"
-            className="underline"
-          >
-            GitHub repository
-          </Link>
-          .
-        </p>
-      </TextSection>
       <InfoSection
         title="What is API.Bible?"
         url="https://api.bible"
@@ -76,9 +47,30 @@ export default async function HomePage() {
         }
       />
       <TextSection>
+        <h3 className="text-2xl font-bold">WELCOME.</h3>
         <p>
-          We hope this is a helpful tool for familiarizing yourself with
-          API.Bible. To get started with the demo, click the button below:
+          Welcome to the API.Bible NextJS Demo application! This app was built
+          to be a tool you can use to see in real-time how our API functions.
+          The URL structure is intended to match that of our API to help you get
+          familiar with how Bible data is queried. Along with the accompanying
+          API results, each page will include a quick guide to querying the data
+          that is being shown. If you want more details about our platform, be
+          sure to check out our{" "}
+          <Link href="https://docs.api.bible" className="underline">
+            documentation
+          </Link>
+          .
+        </p>
+        <p className="text-sm">
+          If you are interested in seeing how this application is built, check
+          out our public{" "}
+          <Link
+            href="https://github.com/americanbible/api-bible-demo"
+            className="underline"
+          >
+            GitHub repository
+          </Link>
+          .
         </p>
       </TextSection>
 
