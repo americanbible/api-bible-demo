@@ -4,7 +4,6 @@ import { LinkButton } from "@/components/LinkButton";
 import { Bible, SearchResults } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { ActionSection } from "@/components/sections/ActionSection";
 import Link from "next/link";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { BibleSection } from "@/components/sections/BibleSection";
@@ -97,30 +96,30 @@ export async function SearchResultsPage({
           )}
         </div>
 
-        <ActionSection>
+        <div className="w-full flex flex-row border-black border-b-1">
           {previousButtonVisible ? (
             <LinkButton
               title="Previous Page"
               href={`/bibles/${bibleId}/search/${searchLink}?page=${page - 1}`}
-              className="grow border-r-[1px]"
+              className="w-[50%] border-r-[1px]"
             >
               <ArrowLeft size={16} />
             </LinkButton>
           ) : (
-            <div className="grow h-full border-r-[1px]" />
+            <div className="w-[50%] h-full border-r-[1px]" />
           )}
           {nextButtonVisible ? (
             <LinkButton
               title="Next Page"
               href={`/bibles/${bibleId}/search/${searchLink}?page=${page + 1}`}
-              className="flex-row-reverse grow"
+              className="flex-row-reverse w-[50%]"
             >
               <ArrowRight size={16} />
             </LinkButton>
           ) : (
-            <div className="grow" />
+            <div className="w-[50%]" />
           )}
-        </ActionSection>
+        </div>
       </Page>
     );
   } else {

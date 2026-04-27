@@ -13,7 +13,7 @@ type BreadcrumbsProps = {
  */
 export const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center flex-wrap gap-1">
       {items.map(({ title, href }, i) => (
         <React.Fragment key={title + i}>
           {!!href ? (

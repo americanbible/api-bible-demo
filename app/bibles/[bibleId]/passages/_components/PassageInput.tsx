@@ -15,7 +15,7 @@ export const PassageInput = ({ bibleId }: PassageInputProps) => {
   const [startVerseId, setStartVerseId] = useState<string>("");
   const [endVerseId, setEndVerseId] = useState<string>("");
 
-  const inputClassName = "w-[300px]  border-1 px-4 py-2";
+  const inputClassName = "max-w-[300px] border-1 px-4 py-2";
 
   return (
     <div className="flex flex-col gap-4 p-12 border-t-zinc-200 border-b-1">
@@ -27,7 +27,7 @@ export const PassageInput = ({ bibleId }: PassageInputProps) => {
         </Link>
       </p>
 
-      <div className="flex flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-4">
         <div className="grow flex flex-col gap-1">
           <h5 className="text-sm font-bold">StartIng Verse ID:</h5>
           <input
@@ -50,7 +50,7 @@ export const PassageInput = ({ bibleId }: PassageInputProps) => {
       </div>
 
       {!!startVerseId && !!endVerseId && (
-        <div className="w-fit">
+        <div className="w-fit mt-2">
           <LinkButton
             href={`/bibles/${bibleId}/passages/${startVerseId}-${endVerseId}`}
             title="Go to Passage"

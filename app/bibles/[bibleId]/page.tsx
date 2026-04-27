@@ -2,7 +2,6 @@ import { ActionSection } from "@/components/sections/ActionSection";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { JSONSection } from "@/components/sections/JSONSection";
-import { LinkButton } from "@/components/LinkButton";
 import { BibleSection } from "@/components/sections/BibleSection";
 import { Bible } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
@@ -79,29 +78,25 @@ export default async function BiblePage(props: BiblePageProps) {
       />
       <BibleSection bible={bible} />
 
-      <ActionSection>
-        <LinkButton
-          title="View Books"
-          href={`/bibles/${bible.id}/books`}
-          className="grow border-r-[1px]"
-        >
-          <Book size={16} />
-        </LinkButton>
-        <LinkButton
-          title="Find Passages"
-          href={`/bibles/${bible.id}/passages`}
-          className="grow border-r-[1px]"
-        >
-          <BookText size={16} />
-        </LinkButton>
-        <LinkButton
-          title="Search"
-          href={`/bibles/${bible.id}/search`}
-          className="grow"
-        >
-          <Search size={16} />
-        </LinkButton>
-      </ActionSection>
+      <ActionSection
+        items={[
+          {
+            title: "View Books",
+            href: `/bibles/${bible.id}/books`,
+            children: <Book size={16} />,
+          },
+          {
+            title: "Find Passages",
+            href: `/bibles/${bible.id}/passages`,
+            children: <BookText size={16} />,
+          },
+          {
+            title: "Search",
+            href: `/bibles/${bible.id}/search`,
+            children: <Search size={16} />,
+          },
+        ]}
+      />
 
       <JSONSection json={bible} />
     </Page>

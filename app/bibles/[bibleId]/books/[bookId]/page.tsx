@@ -1,8 +1,7 @@
 import { HeaderSection } from "@/components/sections/HeaderSection";
-import { LinkButton } from "@/components/LinkButton";
 import { Bible, Book } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
-import { Book as BookIcon } from "lucide-react";
+import { Book as BookIcon, BookText } from "lucide-react";
 import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
 import { ActionSection } from "@/components/sections/ActionSection";
@@ -91,23 +90,20 @@ export default async function BookPage(props: BookPageProps) {
         }
       />
       <BibleSection bible={bible} />
-      <ActionSection>
-        <LinkButton
-          title="View Chapters"
-          href={`/bibles/${bibleId}/books/${bookId}/chapters`}
-          className="grow border-r-[1px]"
-        >
-          <BookIcon size={16} />
-        </LinkButton>
-
-        <LinkButton
-          title="View Sections"
-          href={`/bibles/${bibleId}/books/${bookId}/sections`}
-          className="grow"
-        >
-          <BookIcon size={16} />
-        </LinkButton>
-      </ActionSection>
+      <ActionSection
+        items={[
+          {
+            title: "View Chapters",
+            href: `/bibles/${bibleId}/books/${bookId}/chapters`,
+            children: <BookIcon size={16} />,
+          },
+          {
+            title: "View Sections",
+            href: `/bibles/${bibleId}/books/${bookId}/sections`,
+            children: <BookText size={16} />,
+          },
+        ]}
+      />
 
       <JSONSection
         //Truncate chapter display to reduce page clutter

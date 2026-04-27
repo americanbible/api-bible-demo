@@ -1,9 +1,8 @@
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { VerseContentSection } from "@/components/sections/VerseContentSection";
-import { LinkButton } from "@/components/LinkButton";
 import { Bible, ChapterWithVerseContent } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
-import { BookIcon, TextInitial } from "lucide-react";
+import { BookText, TextInitial } from "lucide-react";
 import { ActionSection } from "@/components/sections/ActionSection";
 import Link from "next/link";
 import { InfoSection } from "@/components/sections/InfoSection";
@@ -99,23 +98,20 @@ export default async function ChapterPage(props: ChapterPageProps) {
         }
       />
       <BibleSection bible={bible} />
-      <ActionSection>
-        <LinkButton
-          title="View Verses"
-          href={`/bibles/${bibleId}/chapters/${chapterId}/verses`}
-          className="grow border-r-[1px]"
-        >
-          <TextInitial size={16} />
-        </LinkButton>
-
-        <LinkButton
-          title="View Sections"
-          href={`/bibles/${bibleId}/chapters/${chapterId}/sections`}
-          className="grow"
-        >
-          <BookIcon size={16} />
-        </LinkButton>
-      </ActionSection>
+      <ActionSection
+        items={[
+          {
+            title: "View Verses",
+            href: `/bibles/${bibleId}/chapters/${chapterId}/verses`,
+            children: <TextInitial size={16} />,
+          },
+          {
+            title: "View Sections",
+            href: `/bibles/${bibleId}/chapters/${chapterId}/sections`,
+            children: <BookText size={16} />,
+          },
+        ]}
+      />
 
       <VerseContentSection
         linkBase={`/bibles/${bibleId}/chapters`}

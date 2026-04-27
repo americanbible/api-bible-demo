@@ -2,7 +2,7 @@ import { SquareArrowOutUpRight } from "lucide-react";
 import Link from "next/link";
 import { ReactNode } from "react";
 
-type LinkButtonProps = {
+export type LinkButtonProps = {
   title: string;
   href: string;
   external?: boolean;

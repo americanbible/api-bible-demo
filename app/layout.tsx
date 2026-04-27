@@ -40,7 +40,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="w-full h-full flex flex-col items-center">
-        <div className="max-w-[800px] flex flex-col border-black border-l-[1px] border-r-[1px] pb-[20vh]">
+        <div className="max-w-full md:max-w-[800px] flex flex-col border-black border-l-[1px] border-r-[1px] pb-[20vh]">
           <Suspense fallback={<PageLoader />}>
             <Navbar />
             {children}

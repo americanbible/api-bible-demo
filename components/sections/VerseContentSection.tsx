@@ -39,26 +39,26 @@ export const VerseContentSection = ({
       </div>
 
       {!!linkBase && (
-        <ActionSection>
+        <div className="w-full flex flex-row border-black border-b-1">
           {!!previous?.id ? (
             <LinkButton
-              className="grow border-r-[1px]"
+              className="w-[50%] border-r-[1px]"
               href={`${linkBase}/${previous.id}`}
               title="Previous"
             />
           ) : (
-            <div className="grow h-full border-r-[1px]" />
+            <div className="w-[50%] h-full border-r-[1px]" />
           )}
           {!!next?.id ? (
             <LinkButton
-              className="grow"
+              className="w-[50%]"
               href={`${linkBase}/${next.id}`}
               title="Next"
             />
           ) : (
-            <div className="grow" />
+            <div className="w-[50%]" />
           )}
-        </ActionSection>
+        </div>
       )}
     </>
   );

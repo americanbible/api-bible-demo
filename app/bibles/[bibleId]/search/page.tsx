@@ -1,7 +1,6 @@
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { Bible } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
-import { LinkButton } from "@/components/LinkButton";
 import { Search } from "lucide-react";
 import { ActionSection } from "@/components/sections/ActionSection";
 import { InfoSection } from "@/components/sections/InfoSection";
@@ -95,18 +94,13 @@ export default async function SearchPage(props: SearchPageProps) {
         }
       />
       <BibleSection bible={bible} />
-      <ActionSection>
-        {values.map(([value, href], i) => (
-          <LinkButton
-            key={value}
-            href={`/bibles/${bibleId}/search/${href}`}
-            title={`Search "${value}"`}
-            className={`grow ${i !== values.length - 1 ? "border-r-[1px]" : ""}`}
-          >
-            <Search size={16} className="mr-1" />
-          </LinkButton>
-        ))}
-      </ActionSection>
+      <ActionSection
+        items={values.map(([value, href]) => ({
+          title: `Search "${value}"`,
+          href: `/bibles/${bibleId}/search/${href}`,
+          children: <Search size={16} className="mr-1" />,
+        }))}
+      />
 
       <TextSection>
         <p>

@@ -1,5 +1,7 @@
-import { Info } from "lucide-react";
-import { ReactNode } from "react";
+"use client";
+
+import { BookOpenText, Check, Copy } from "lucide-react";
+import { ReactNode, useState } from "react";
 
 type InfoCardProps = {
   title: string;
@@ -12,14 +14,41 @@ type InfoCardProps = {
  * about the page they are currently visiting.
  */
 export const InfoSection = ({ title, info, url }: InfoCardProps) => {
+  const [copied, setCopied] = useState(false);
+  const onUrlCopy = async () => {
+    if (url) {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 2000);
+    }
+  };
   return (
     <div className="bg-black text-white w-full p-4 flex gap-2">
       <div className="w-[16px] mr-2">
-        <Info size={16} className="mt-[5px]" />
+        <BookOpenText size={16} className="mt-[5px]" />
       </div>
       <div className="flex flex-col gap-1">
         <h5 className="font-bold">{title}</h5>
-        {!!url && <code className="mb-2 font-bold text-zinc-400">{url}</code>}
+        {!!url && (
+          <div className="w-full flex gap-2 overflow-hidden">
+            <div className="w-[16px] mt-[5px]" title="Copy to Clipboard">
+              {copied ? (
+                <Check size={16} />
+              ) : (
+                <Copy
+                  size={16}
+                  className="cursor-pointer"
+                  onClick={onUrlCopy}
+                />
+              )}
+            </div>
+            <code className="mb-2 font-bold text-zinc-400 break-all">
+              {url}
+            </code>
+          </div>
+        )}
         {info}
       </div>
     </div>
