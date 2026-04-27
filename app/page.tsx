@@ -72,17 +72,16 @@ export default async function HomePage() {
           </Link>
           .
         </p>
+        <div className="w-full flex justify-center mt-8">
+          <LinkButton
+            title="Expore the Demo"
+            href="/bibles"
+            className="border-[1px] text-lg gap-4"
+          >
+            <BookOpenText size={16} />
+          </LinkButton>
+        </div>
       </TextSection>
-
-      <div className="w-full flex justify-center">
-        <LinkButton
-          title="Expore the Demo"
-          href="/bibles"
-          className="border-[1px] text-lg gap-4"
-        >
-          <BookOpenText size={16} />
-        </LinkButton>
-      </div>
     </div>
   );
 }
