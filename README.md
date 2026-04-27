@@ -60,3 +60,10 @@ npm run dev
 4. Your application should now be running on `localhost:3000`
 
 5. (optional) For demo purposes, the list of Bibles shown in the live demo app has been limited to the ones listed in [demoBibles.ts](./utils/demoBibles.ts). If you want to see the full list of Bibles you have access to, feel free to remove that list and its dependency in the [BibleLayout](./app/bibles/[bibleId]/layout.tsx).
+
+### Future Updates
+
+This application is still a work in progress. In the near future we hope to provide the following features:
+
+1. [FUMS](https://docs.api.bible/resources/fair-use) integration
+2. Audio Bible support
