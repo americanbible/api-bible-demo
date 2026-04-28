@@ -25,7 +25,7 @@ export const InfoSection = ({ title, info, url }: InfoCardProps) => {
     }
   };
   return (
-    <div className="bg-black text-white w-full p-4 flex gap-2">
+    <div className="bg-black text-white w-full px-4 py-12 flex gap-2">
       <div className="w-[16px] mr-2">
         <BookOpenText size={16} className="mt-[5px]" />
       </div>

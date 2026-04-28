@@ -1,5 +1,4 @@
 import { Page } from "@/components/Page";
-import { BibleSection } from "@/components/sections/BibleSection";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { ListSection } from "@/components/sections/ListSection";
@@ -35,7 +34,7 @@ export default async function ChaptersListPage(props: ChaptersListPageProps) {
   return (
     <Page>
       <HeaderSection
-        title={`${book.name} Chapters`}
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -98,7 +97,6 @@ export default async function ChaptersListPage(props: ChaptersListPageProps) {
           </>
         }
       />
-      <BibleSection bible={bible} />
       <ListSection
         title="Chapters"
         items={chapters.map((chapter) => ({

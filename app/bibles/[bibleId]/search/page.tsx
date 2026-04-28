@@ -2,11 +2,8 @@ import { HeaderSection } from "@/components/sections/HeaderSection";
 import { Bible } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { Search } from "lucide-react";
-import { ActionSection } from "@/components/sections/ActionSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
-import { BibleSection } from "@/components/sections/BibleSection";
-import { TextSection } from "@/components/sections/TextSection";
 import { Page } from "@/components/Page";
 
 type SearchPageProps = {
@@ -38,7 +35,7 @@ export default async function SearchPage(props: SearchPageProps) {
   return (
     <Page>
       <HeaderSection
-        title="Search"
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -57,6 +54,11 @@ export default async function SearchPage(props: SearchPageProps) {
             href: `/bibles/${bibleId}/search`,
           },
         ]}
+        actionItems={values.map(([value, href]) => ({
+          title: `Search "${value}"`,
+          href: `/bibles/${bibleId}/search/${href}`,
+          children: <Search size={16} className="mr-1" />,
+        }))}
       />
 
       <InfoSection
@@ -93,22 +95,6 @@ export default async function SearchPage(props: SearchPageProps) {
           </>
         }
       />
-      <BibleSection bible={bible} />
-      <ActionSection
-        items={values.map(([value, href]) => ({
-          title: `Search "${value}"`,
-          href: `/bibles/${bibleId}/search/${href}`,
-          children: <Search size={16} className="mr-1" />,
-        }))}
-      />
-
-      <TextSection>
-        <p>
-          To avoid API abuse, our search demo is currently limited to a
-          predefined set of search values. Click one of the above options to
-          test our search feature.
-        </p>
-      </TextSection>
     </Page>
   );
 }

@@ -5,7 +5,6 @@ import { PassageInput } from "./_components/PassageInput";
 import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
 import { Page } from "@/components/Page";
-import { BibleSection } from "@/components/sections/BibleSection";
 
 type SectionPageProps = {
   params: Promise<{ bibleId: string }>;
@@ -29,7 +28,7 @@ export default async function SectionPage(props: SectionPageProps) {
   return (
     <Page>
       <HeaderSection
-        title="Find Passages"
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -82,7 +81,6 @@ export default async function SectionPage(props: SectionPageProps) {
           </>
         }
       />
-      <BibleSection bible={bible} />
       <PassageInput bibleId={bibleId} />
     </Page>
   );

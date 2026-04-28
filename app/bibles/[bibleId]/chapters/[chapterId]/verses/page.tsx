@@ -1,5 +1,4 @@
 import { Page } from "@/components/Page";
-import { BibleSection } from "@/components/sections/BibleSection";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { ListSection } from "@/components/sections/ListSection";
@@ -35,7 +34,7 @@ export default async function VersesListPage(props: VersesListPageProps) {
   return (
     <Page>
       <HeaderSection
-        title={`${chapter.reference} Verses`}
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -91,7 +90,6 @@ export default async function VersesListPage(props: VersesListPageProps) {
           </>
         }
       />
-      <BibleSection bible={bible} />
       <ListSection
         title="Verses"
         items={verses.map((verse) => ({

@@ -1,5 +1,4 @@
 import { Page } from "@/components/Page";
-import { BibleSection } from "@/components/sections/BibleSection";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { VerseContentSection } from "@/components/sections/VerseContentSection";
@@ -35,7 +34,7 @@ export default async function SectionPage(props: SectionPageProps) {
   return (
     <Page>
       <HeaderSection
-        title={section.title}
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -91,7 +90,6 @@ export default async function SectionPage(props: SectionPageProps) {
           </>
         }
       />
-      <BibleSection bible={bible} />
       <VerseContentSection
         linkBase={`/bibles/${bibleId}/sections`}
         verseContent={section}

@@ -3,10 +3,9 @@ import { ListSection } from "@/components/sections/ListSection";
 import { LinkButton } from "@/components/LinkButton";
 import { Bible, SearchResults } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeftCircle, ArrowRightCircle, Search } from "lucide-react";
 import Link from "next/link";
 import { InfoSection } from "@/components/sections/InfoSection";
-import { BibleSection } from "@/components/sections/BibleSection";
 import { Page } from "@/components/Page";
 import { Spacer } from "@/components/Spacer";
 
@@ -59,9 +58,9 @@ export async function SearchResultsPage({
           searchLink={searchLink}
           searchValue={searchValue}
         />
-        <div className="flex border-b-[1px] ">
-          <Spacer />
-          <div className="flex flex-col border-r-[1px] px-4 py-2">
+        <div className="w-full h-8" />
+        <div className="flex items-end border-black border-b-[1px] px-0 sm:px-8 sticky top-[-1px] bg-white">
+          <div className="flex flex-col border-x-[1px] border-t-[1px] px-4 py-2">
             <p>
               Search Query: <b>{`"${searchValue}"`}</b>
             </p>
@@ -73,6 +72,43 @@ export async function SearchResultsPage({
               of <b>{total}</b> result(s).
             </p>
           </div>
+
+          <div className="grow" />
+          {previousButtonVisible && (
+            <>
+              <LinkButton
+                className="sm:hidden border-x-[1px] border-t-[1px] h-full"
+                href={`/bibles/${bibleId}/search/${searchLink}?page=${page - 1}`}
+                title=""
+              >
+                <ArrowLeftCircle size={16} />
+              </LinkButton>
+              <LinkButton
+                className="hidden sm:flex border-x-[1px] border-t-[1px] h-full"
+                href={`/bibles/${bibleId}/search/${searchLink}?page=${page - 1}`}
+                title="Previous"
+              />
+            </>
+          )}
+          {nextButtonVisible && (
+            <>
+              <LinkButton
+                className={`sm:hidden border-r-[1px] border-t-[1px] h-full ${!previousButtonVisible ? "border-l-[1px]" : ""}`}
+                href={`/bibles/${bibleId}/search/${searchLink}?page=${page + 1}`}
+                title=""
+              >
+                <ArrowRightCircle size={16} />
+              </LinkButton>
+              <LinkButton
+                className={`hidden sm:flex border-r-[1px] border-t-[1px] h-full ${!previousButtonVisible ? "border-l-[1px]" : ""}`}
+                href={`/bibles/${bibleId}/search/${searchLink}?page=${page + 1}`}
+                title="Next"
+              />
+            </>
+          )}
+        </div>
+        <div className="flex border-b-[1px] ">
+          <Spacer />
         </div>
 
         <div className="flex flex-col gap-4">
@@ -93,31 +129,6 @@ export async function SearchResultsPage({
                 href: `/bibles/${bibleId}/verses/${verse.id}`,
               }))}
             />
-          )}
-        </div>
-
-        <div className="w-full flex flex-row border-black border-b-1">
-          {previousButtonVisible ? (
-            <LinkButton
-              title="Previous Page"
-              href={`/bibles/${bibleId}/search/${searchLink}?page=${page - 1}`}
-              className="w-[50%] border-r-[1px]"
-            >
-              <ArrowLeft size={16} />
-            </LinkButton>
-          ) : (
-            <div className="w-[50%] h-full border-r-[1px]" />
-          )}
-          {nextButtonVisible ? (
-            <LinkButton
-              title="Next Page"
-              href={`/bibles/${bibleId}/search/${searchLink}?page=${page + 1}`}
-              className="flex-row-reverse w-[50%]"
-            >
-              <ArrowRight size={16} />
-            </LinkButton>
-          ) : (
-            <div className="w-[50%]" />
           )}
         </div>
       </Page>
@@ -182,7 +193,7 @@ const SearchResultHeader = ({
   return (
     <>
       <HeaderSection
-        title="Search"
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -203,6 +214,13 @@ const SearchResultHeader = ({
           {
             title: searchValue,
             href: `/bibles/${bible.id}/search/${searchLink}`,
+          },
+        ]}
+        actionItems={[
+          {
+            title: "Choose Another Query",
+            href: `/bibles/${bible.id}/search`,
+            children: <Search size={16} />,
           },
         ]}
       />
@@ -241,7 +259,6 @@ const SearchResultHeader = ({
           </>
         }
       />
-      <BibleSection bible={bible} />
     </>
   );
 };

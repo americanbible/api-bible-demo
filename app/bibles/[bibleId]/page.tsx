@@ -1,8 +1,6 @@
-import { ActionSection } from "@/components/sections/ActionSection";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { JSONSection } from "@/components/sections/JSONSection";
-import { BibleSection } from "@/components/sections/BibleSection";
 import { Bible } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { Book, BookText, Search } from "lucide-react";
@@ -29,7 +27,7 @@ export default async function BiblePage(props: BiblePageProps) {
   return (
     <Page>
       <HeaderSection
-        title="Bible Info"
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -42,6 +40,23 @@ export default async function BiblePage(props: BiblePageProps) {
           {
             title: bible.name,
             href: `/bibles/${bibleId}`,
+          },
+        ]}
+        actionItems={[
+          {
+            title: "View Books",
+            href: `/bibles/${bible.id}/books`,
+            children: <Book size={16} />,
+          },
+          {
+            title: "Find Passages",
+            href: `/bibles/${bible.id}/passages`,
+            children: <BookText size={16} />,
+          },
+          {
+            title: "Search",
+            href: `/bibles/${bible.id}/search`,
+            children: <Search size={16} />,
           },
         ]}
       />
@@ -75,27 +90,6 @@ export default async function BiblePage(props: BiblePageProps) {
             </p>
           </>
         }
-      />
-      <BibleSection bible={bible} />
-
-      <ActionSection
-        items={[
-          {
-            title: "View Books",
-            href: `/bibles/${bible.id}/books`,
-            children: <Book size={16} />,
-          },
-          {
-            title: "Find Passages",
-            href: `/bibles/${bible.id}/passages`,
-            children: <BookText size={16} />,
-          },
-          {
-            title: "Search",
-            href: `/bibles/${bible.id}/search`,
-            children: <Search size={16} />,
-          },
-        ]}
       />
 
       <JSONSection json={bible} />

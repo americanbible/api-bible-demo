@@ -3,10 +3,8 @@ import { VerseContentSection } from "@/components/sections/VerseContentSection";
 import { Bible, ChapterWithVerseContent } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import { BookText, TextInitial } from "lucide-react";
-import { ActionSection } from "@/components/sections/ActionSection";
 import Link from "next/link";
 import { InfoSection } from "@/components/sections/InfoSection";
-import { BibleSection } from "@/components/sections/BibleSection";
 import { Page } from "@/components/Page";
 
 type ChapterPageProps = {
@@ -39,7 +37,7 @@ export default async function ChapterPage(props: ChapterPageProps) {
   return (
     <Page>
       <HeaderSection
-        title={chapter.reference}
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -59,6 +57,18 @@ export default async function ChapterPage(props: ChapterPageProps) {
           {
             title: chapter.reference,
             href: `/bibles/${bibleId}/chapters/${chapter.id}`,
+          },
+        ]}
+        actionItems={[
+          {
+            title: "View Verses",
+            href: `/bibles/${bibleId}/chapters/${chapterId}/verses`,
+            children: <TextInitial size={16} />,
+          },
+          {
+            title: "View Sections",
+            href: `/bibles/${bibleId}/chapters/${chapterId}/sections`,
+            children: <BookText size={16} />,
           },
         ]}
       />
@@ -96,21 +106,6 @@ export default async function ChapterPage(props: ChapterPageProps) {
             </p>
           </>
         }
-      />
-      <BibleSection bible={bible} />
-      <ActionSection
-        items={[
-          {
-            title: "View Verses",
-            href: `/bibles/${bibleId}/chapters/${chapterId}/verses`,
-            children: <TextInitial size={16} />,
-          },
-          {
-            title: "View Sections",
-            href: `/bibles/${bibleId}/chapters/${chapterId}/sections`,
-            children: <BookText size={16} />,
-          },
-        ]}
       />
 
       <VerseContentSection

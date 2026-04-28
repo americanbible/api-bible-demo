@@ -4,9 +4,7 @@ import { makeCachedApiRequest } from "@/utils/cache";
 import { Book as BookIcon, BookText } from "lucide-react";
 import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
-import { ActionSection } from "@/components/sections/ActionSection";
 import { JSONSection } from "@/components/sections/JSONSection";
-import { BibleSection } from "@/components/sections/BibleSection";
 import { Page } from "@/components/Page";
 
 type BookPageProps = {
@@ -34,7 +32,7 @@ export default async function BookPage(props: BookPageProps) {
   return (
     <Page>
       <HeaderSection
-        title={book.name}
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -55,6 +53,18 @@ export default async function BookPage(props: BookPageProps) {
           {
             title: book.name,
             href: `/bibles/${bibleId}/books/${bookId}`,
+          },
+        ]}
+        actionItems={[
+          {
+            title: "View Chapters",
+            href: `/bibles/${bibleId}/books/${bookId}/chapters`,
+            children: <BookIcon size={16} />,
+          },
+          {
+            title: "View Sections",
+            href: `/bibles/${bibleId}/books/${bookId}/sections`,
+            children: <BookText size={16} />,
           },
         ]}
       />
@@ -88,21 +98,6 @@ export default async function BookPage(props: BookPageProps) {
             </p>
           </>
         }
-      />
-      <BibleSection bible={bible} />
-      <ActionSection
-        items={[
-          {
-            title: "View Chapters",
-            href: `/bibles/${bibleId}/books/${bookId}/chapters`,
-            children: <BookIcon size={16} />,
-          },
-          {
-            title: "View Sections",
-            href: `/bibles/${bibleId}/books/${bookId}/sections`,
-            children: <BookText size={16} />,
-          },
-        ]}
       />
 
       <JSONSection

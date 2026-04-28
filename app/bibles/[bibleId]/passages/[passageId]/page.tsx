@@ -1,10 +1,10 @@
 import { Page } from "@/components/Page";
-import { BibleSection } from "@/components/sections/BibleSection";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { VerseContentSection } from "@/components/sections/VerseContentSection";
 import { Bible, Passage } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
+import { BookText } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -40,7 +40,7 @@ export default async function PassagePage(props: PassagePageProps) {
   return (
     <Page>
       <HeaderSection
-        title={passage.reference}
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -61,6 +61,13 @@ export default async function PassagePage(props: PassagePageProps) {
           {
             title: passage.reference,
             href: `/bibles/${bibleId}/passages/${passage.id}`,
+          },
+        ]}
+        actionItems={[
+          {
+            title: "Find Another Passage",
+            href: `/bibles/${bibleId}/passages`,
+            children: <BookText size={16} />,
           },
         ]}
       />
@@ -104,7 +111,6 @@ export default async function PassagePage(props: PassagePageProps) {
         }
       />
 
-      <BibleSection bible={bible} />
       <VerseContentSection
         title={passage.id}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

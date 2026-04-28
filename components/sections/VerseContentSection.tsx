@@ -1,7 +1,6 @@
 import { VerseContent as VerseContentType } from "@/types/api";
-import { ActionSection } from "./ActionSection";
 import { LinkButton } from "../LinkButton";
-import { Spacer } from "../Spacer";
+import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
 
 type VerseContentProps = {
   linkBase?: string;
@@ -20,14 +19,51 @@ export const VerseContentSection = ({
 }: VerseContentProps) => {
   return (
     <>
-      <div className="flex items-stretch border-black border-b-[1px]">
-        <Spacer />
-        <h3 className="text-xl font-bold px-4 py-2 border-black border-r-[1px]">
+      <div className="w-full h-12" />
+      <div className="flex items-end border-black border-b-[1px] px-0 sm:px-8 sticky top-[-1px] bg-white">
+        <h3 className="text-xl font-bold px-4 py-2 border-black border-x-[1px] border-t-[1px]">
           {title}
         </h3>
-        <h5 className="text-lg px-4 py-2 border-black border-r-[1px]">
+        <h5 className="text-lg px-4 py-2 border-black border-r-[1px] border-t-[1px]">
           {verseCount} {verseCount === 1 ? "Verse" : "Verses"}
         </h5>
+        {!!linkBase && (
+          <>
+            <div className="grow" />
+            {!!previous?.id && (
+              <>
+                <LinkButton
+                  className="sm:hidden border-x-[1px] border-t-[1px] h-full"
+                  href={`${linkBase}/${previous.id}`}
+                  title=""
+                >
+                  <ArrowLeftCircle size={16} />
+                </LinkButton>
+                <LinkButton
+                  className="hidden sm:flex border-x-[1px] border-t-[1px] h-full"
+                  href={`${linkBase}/${previous.id}`}
+                  title="Previous"
+                />
+              </>
+            )}
+            {!!next?.id && (
+              <>
+                <LinkButton
+                  className={`sm:hidden border-r-[1px] border-t-[1px] h-full ${!previous?.id ? "border-l-[1px]" : ""}`}
+                  href={`${linkBase}/${next.id}`}
+                  title=""
+                >
+                  <ArrowRightCircle size={16} />
+                </LinkButton>
+                <LinkButton
+                  className={`hidden sm:flex border-r-[1px] border-t-[1px] h-full ${!previous?.id ? "border-l-[1px]" : ""}`}
+                  href={`${linkBase}/${next.id}`}
+                  title="Next"
+                />
+              </>
+            )}
+          </>
+        )}
       </div>
       <div className="w-full flex flex-col items-center border-b-[1px]">
         <div className="w-full">
@@ -37,29 +73,6 @@ export const VerseContentSection = ({
           />
         </div>
       </div>
-
-      {!!linkBase && (
-        <div className="w-full flex flex-row border-black border-b-1">
-          {!!previous?.id ? (
-            <LinkButton
-              className="w-[50%] border-r-[1px]"
-              href={`${linkBase}/${previous.id}`}
-              title="Previous"
-            />
-          ) : (
-            <div className="w-[50%] h-full border-r-[1px]" />
-          )}
-          {!!next?.id ? (
-            <LinkButton
-              className="w-[50%]"
-              href={`${linkBase}/${next.id}`}
-              title="Next"
-            />
-          ) : (
-            <div className="w-[50%]" />
-          )}
-        </div>
-      )}
     </>
   );
 };

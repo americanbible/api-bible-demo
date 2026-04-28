@@ -4,7 +4,6 @@ import { ListSection } from "@/components/sections/ListSection";
 import { Section, Bible, Book } from "@/types/api";
 import { makeCachedApiRequest } from "@/utils/cache";
 import Link from "next/link";
-import { BibleSection } from "@/components/sections/BibleSection";
 import { Page } from "@/components/Page";
 
 type SectionsListPageProps = {
@@ -37,7 +36,7 @@ export default async function BookSectionsListPage(
   return (
     <Page>
       <HeaderSection
-        title={`${book.name} Sections`}
+        bible={bible}
         breadcrumbs={[
           {
             title: "Home",
@@ -100,7 +99,6 @@ export default async function BookSectionsListPage(
           </>
         }
       />
-      <BibleSection bible={bible} />
       <ListSection
         items={sections.map((section) => ({
           title: (
