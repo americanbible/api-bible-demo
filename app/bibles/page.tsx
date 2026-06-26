@@ -2,9 +2,9 @@ import { Page } from "@/components/Page";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { ListSection } from "@/components/sections/ListSection";
-import { Bible } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
+import { client } from "@/utils/api";
 import { demoBibles } from "@/utils/demoBibles";
+import { cacheLife } from "next/cache";
 import Link from "next/link";
 
 /**
@@ -13,12 +13,12 @@ import Link from "next/link";
  *
  * See our [Bibles Guide](https://docs.api.bible/guides/bibles) for more.
  */
-export default async function HomePage() {
+export default async function BiblesPage() {
+  "use cache";
+  cacheLife("max");
   //Fetch bibles from the `/bibles` endpoint
-  const bibles = await makeCachedApiRequest<Bible[]>({
-    endpoint: "/bibles",
-    //Only fetch demo bibles
-    params: { ids: demoBibles.join(",") },
+  const { data: bibles } = await client.bibles.list({
+    ids: demoBibles,
   });
 
   return (

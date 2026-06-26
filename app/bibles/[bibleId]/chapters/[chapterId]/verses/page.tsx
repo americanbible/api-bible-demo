@@ -2,8 +2,8 @@ import { Page } from "@/components/Page";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { ListSection } from "@/components/sections/ListSection";
-import { Bible, Chapter, Verse } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
+import { client } from "@/utils/api";
+import { cacheLife } from "next/cache";
 import Link from "next/link";
 
 type VersesListPageProps = {
@@ -16,20 +16,16 @@ type VersesListPageProps = {
  * See our [Verses Guide](https://docs.api.bible/guides/verses) for more.
  */
 export default async function VersesListPage(props: VersesListPageProps) {
+  "use cache";
+  cacheLife("max");
   const { bibleId, chapterId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
   //Fetch a single chapter from the `/bibles/{bibleId}/chapters/{chapterId}` endpoint
-  const chapter = await makeCachedApiRequest<Chapter>({
-    endpoint: `/bibles/${bibleId}/chapters/${chapterId}`,
-  });
+  const { data: chapter } = await client.chapters.get(bibleId, chapterId);
   //Fetch full list of verses for the given chapter from the `/bibles/{bibleId}/chapters/{chapterId}/verses` endpoint
-  const verses = await makeCachedApiRequest<Verse[]>({
-    endpoint: `/bibles/${bibleId}/chapters/${chapterId}/verses`,
-  });
+  const { data: verses } = await client.verses.list(bibleId, chapterId);
 
   return (
     <Page>
@@ -49,7 +45,7 @@ export default async function VersesListPage(props: VersesListPageProps) {
             href: `/bibles/${bibleId}`,
           },
           {
-            title: chapter.reference,
+            title: chapter.reference!,
             href: `/bibles/${bibleId}/chapters/${chapter.id}`,
           },
           {

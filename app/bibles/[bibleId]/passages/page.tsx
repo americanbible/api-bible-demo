@@ -1,10 +1,10 @@
 import { HeaderSection } from "@/components/sections/HeaderSection";
-import { Bible } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
 import { PassageInput } from "./_components/PassageInput";
 import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
 import { Page } from "@/components/Page";
+import { client } from "@/utils/api";
+import { cacheLife } from "next/cache";
 
 type SectionPageProps = {
   params: Promise<{ bibleId: string }>;
@@ -18,12 +18,12 @@ type SectionPageProps = {
  * *Note: There is no corresponding `/passages` endpoint in the API, this is simply a utility page to assist in passage selection.*
  */
 export default async function SectionPage(props: SectionPageProps) {
+  "use cache";
+  cacheLife("max");
   const { bibleId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
 
   return (
     <Page>

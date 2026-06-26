@@ -1,11 +1,11 @@
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { VerseContentSection } from "@/components/sections/VerseContentSection";
-import { Bible, ChapterWithVerseContent } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
 import { BookText, TextInitial } from "lucide-react";
 import Link from "next/link";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { Page } from "@/components/Page";
+import { client } from "@/utils/api";
+import { cacheLife } from "next/cache";
 
 type ChapterPageProps = {
   params: Promise<{ bibleId: string; chapterId: string }>;
@@ -17,21 +17,18 @@ type ChapterPageProps = {
  * See our [Chapters Guide](https://docs.api.bible/guides/chapters) for more.
  */
 export default async function ChapterPage(props: ChapterPageProps) {
+  "use cache";
+  cacheLife("max");
   const { bibleId, chapterId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
   //Fetch a single chapter from the `/bibles/{bibleId}/chapters/{chapterId}` endpoint
-  const chapter = await makeCachedApiRequest<ChapterWithVerseContent>({
-    endpoint: `/bibles/${bibleId}/chapters/${chapterId}`,
-    params: {
-      "content-type": "html",
-      "include-verse-spans": "true",
-      "include-titles": "true",
-      "include-notes": "true",
-    },
+  const { data: chapter } = await client.chapters.get(bibleId, chapterId, {
+    contentType: "html",
+    includeVerseSpans: true,
+    includeTitles: true,
+    includeNotes: true,
   });
 
   return (
@@ -55,7 +52,7 @@ export default async function ChapterPage(props: ChapterPageProps) {
             title: "Chapters",
           },
           {
-            title: chapter.reference,
+            title: chapter.reference!,
             href: `/bibles/${bibleId}/chapters/${chapter.id}`,
           },
         ]}

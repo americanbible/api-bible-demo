@@ -1,8 +1,8 @@
-import { Bible } from "@/types/api";
 import { BreadcrumbItem, Breadcrumbs } from "../Breadcrumbs";
 import { Spacer } from "../Spacer";
 import { LinkButton, LinkButtonProps } from "../LinkButton";
 import { ArrowDownUp } from "lucide-react";
+import { Bible } from "@americanbible/api-bible-sdk";
 
 type HeaderProps = {
   bible?: Bible;

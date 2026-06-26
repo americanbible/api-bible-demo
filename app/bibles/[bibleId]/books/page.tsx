@@ -1,10 +1,10 @@
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { ListSection } from "@/components/sections/ListSection";
-import { Bible, Book } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
 import Link from "next/link";
 import { Page } from "@/components/Page";
+import { client } from "@/utils/api";
+import { cacheLife } from "next/cache";
 
 type BooksListPageProps = {
   params: Promise<{ bibleId: string }>;
@@ -16,16 +16,15 @@ type BooksListPageProps = {
  * See our [Books Guide](https://docs.api.bible/guides/books) for more.
  */
 export default async function BooksListPage(props: BooksListPageProps) {
+  "use cache";
+  cacheLife("max");
   const { bibleId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
   //Fetch full list of books for the given Bible from the `/bibles/{bibleId}/books` endpoint
-  const books = await makeCachedApiRequest<Book[]>({
-    endpoint: `/bibles/${bibleId}/books`,
-    params: { "include-chapters": "true" },
+  const { data: books } = await client.books.list(bibleId, {
+    includeChapters: true,
   });
 
   return (
@@ -85,7 +84,7 @@ export default async function BooksListPage(props: BooksListPageProps) {
             </p>
           ),
           href: `/bibles/${bibleId}/books/${book.id}`,
-          info: `${book.chapters.length} chapters`,
+          info: `${book.chapters?.length} chapters`,
         }))}
       />
     </Page>

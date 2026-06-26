@@ -2,8 +2,8 @@ import { Page } from "@/components/Page";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { ListSection } from "@/components/sections/ListSection";
-import { Bible, Chapter, Section } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
+import { client } from "@/utils/api";
+import { cacheLife } from "next/cache";
 import Link from "next/link";
 
 type SectionsListPageProps = {
@@ -16,20 +16,18 @@ type SectionsListPageProps = {
  * See our [Sections Guide](https://docs.api.bible/guides/sections) for more.
  */
 export default async function SectionsListPage(props: SectionsListPageProps) {
+  "use cache";
+  cacheLife("max");
   const { bibleId, chapterId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
   //Fetch a single chapter from the `/bibles/{bibleId}/chapters/{chapterId}` endpoint
-  const chapter = await makeCachedApiRequest<Chapter>({
-    endpoint: `/bibles/${bibleId}/chapters/${chapterId}`,
-  });
+  const { data: chapter } = await client.chapters.get(bibleId, chapterId);
   //Fetch full list of sections (if they exist) for the given chapter from the `/bibles/{bibleId}/chapters/{chapterId}/sections` endpoint
-  const sections = await makeCachedApiRequest<Section[]>({
-    endpoint: `/bibles/${bibleId}/chapters/${chapterId}/sections`,
-  }).catch(() => [] as Section[]);
+  const { data: sections } = await client.sections
+    .listForChapter(bibleId, chapterId)
+    .catch(() => ({ data: [] }));
 
   return (
     <Page>
@@ -49,7 +47,7 @@ export default async function SectionsListPage(props: SectionsListPageProps) {
             href: `/bibles/${bibleId}`,
           },
           {
-            title: chapter.reference,
+            title: chapter.reference!,
             href: `/bibles/${bibleId}/chapters/${chapter.id}`,
           },
           {

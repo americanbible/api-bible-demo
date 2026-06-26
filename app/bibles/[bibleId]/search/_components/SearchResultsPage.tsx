@@ -1,13 +1,14 @@
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { ListSection } from "@/components/sections/ListSection";
 import { LinkButton } from "@/components/LinkButton";
-import { Bible, SearchResults } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
 import { ArrowLeftCircle, ArrowRightCircle, Search } from "lucide-react";
 import Link from "next/link";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { Page } from "@/components/Page";
 import { Spacer } from "@/components/Spacer";
+import { client } from "@/utils/api";
+import { Bible } from "@americanbible/api-bible-sdk";
+import { cacheLife } from "next/cache";
 
 type SearchResultsPageProps = {
   bibleId: string;
@@ -30,19 +31,15 @@ export async function SearchResultsPage({
   searchValue,
   searchLink,
 }: SearchResultsPageProps) {
+  "use cache";
+  cacheLife("max");
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
   //Execute a search with the given query using the `/bibles/{bibleId}/search?query={query}` endpoint
-
-  const result = await makeCachedApiRequest<SearchResults>({
-    endpoint: `/bibles/${bibleId}/search`,
-    params: {
-      query: searchValue,
-      limit: PAGE_SIZE.toString(),
-      offset: (page * PAGE_SIZE).toString(),
-    },
+  const { data: result } = await client.search.search(bibleId, {
+    query: searchValue,
+    limit: PAGE_SIZE,
+    offset: page * PAGE_SIZE,
   });
 
   if (result.verses?.length && !result.passages?.length) {
@@ -148,7 +145,7 @@ export async function SearchResultsPage({
               Search Query: <b>{`"${searchValue}"`}</b>
             </p>
             <p>
-              Showing <b>{result.passages.length}</b> result(s).
+              Showing <b>{result.passages?.length}</b> result(s).
             </p>
           </div>
         </div>

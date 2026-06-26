@@ -2,9 +2,9 @@ import { Page } from "@/components/Page";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { VerseContentSection } from "@/components/sections/VerseContentSection";
-import { Bible, Passage } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
+import { client } from "@/utils/api";
 import { BookText } from "lucide-react";
+import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -18,19 +18,16 @@ type PassagePageProps = {
  * See our [Passages Guide](https://docs.api.bible/guides/passages) for more.
  */
 export default async function PassagePage(props: PassagePageProps) {
+  "use cache";
+  cacheLife("max");
   const { bibleId, passageId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
   //Fetch a single passage from the `/bibles/{bibleId}/passages/{passageId}` endpoint
-  const passage = await makeCachedApiRequest<Passage>({
-    endpoint: `/bibles/${bibleId}/passages/${passageId}`,
-    params: {
-      "content-type": "html",
-      "include-verse-spans": "true",
-    },
+  const { data: passage } = await client.passages.get(bibleId, passageId, {
+    contentType: "html",
+    includeVerseSpans: true,
   });
 
   if (!passage) {
@@ -59,7 +56,7 @@ export default async function PassagePage(props: PassagePageProps) {
             href: `/bibles/${bibleId}/passages`,
           },
           {
-            title: passage.reference,
+            title: passage.reference!,
             href: `/bibles/${bibleId}/passages/${passage.id}`,
           },
         ]}
