@@ -1,10 +1,10 @@
 import { HeaderSection } from "@/components/sections/HeaderSection";
-import { Bible } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
 import { Search } from "lucide-react";
 import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
 import { Page } from "@/components/Page";
+import { client } from "@/utils/api";
+import { cacheLife } from "next/cache";
 
 type SearchPageProps = {
   params: Promise<{ bibleId: string }>;
@@ -18,12 +18,12 @@ type SearchPageProps = {
  * *Note: You cannot call the  `/search` endpoint in the API without a `query` attached to it, this is simply a utility page to reduce API usage.*
  */
 export default async function SearchPage(props: SearchPageProps) {
+  "use cache";
+  cacheLife("max");
   const { bibleId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
 
   const values = [
     ["Aaron", "name"],

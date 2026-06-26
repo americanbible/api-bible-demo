@@ -1,11 +1,11 @@
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { JSONSection } from "@/components/sections/JSONSection";
-import { Bible } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
 import { Book, BookText, Search } from "lucide-react";
 import Link from "next/link";
 import { Page } from "@/components/Page";
+import { client } from "@/utils/api";
+import { cacheLife } from "next/cache";
 
 type BiblePageProps = {
   params: Promise<{ bibleId: string }>;
@@ -17,12 +17,12 @@ type BiblePageProps = {
  * See our [Bibles Guide](https://docs.api.bible/guides/bibles) for more.
  */
 export default async function BiblePage(props: BiblePageProps) {
+  "use cache";
+  cacheLife("max");
   const { bibleId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
 
   return (
     <Page>

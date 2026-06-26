@@ -1,10 +1,10 @@
-import { VerseContent as VerseContentType } from "@/types/api";
+import { Chapter, Section, Verse } from "@americanbible/api-bible-sdk";
 import { LinkButton } from "../LinkButton";
 import { ArrowLeftCircle, ArrowRightCircle } from "lucide-react";
 
 type VerseContentProps = {
   linkBase?: string;
-  verseContent: VerseContentType;
+  verseContent: Verse | Chapter | Section;
   title?: string;
 };
 
@@ -69,7 +69,7 @@ export const VerseContentSection = ({
         <div className="w-full">
           <div
             className="scripture-styles p-4"
-            dangerouslySetInnerHTML={{ __html: content }}
+            dangerouslySetInnerHTML={{ __html: content! }}
           />
         </div>
       </div>

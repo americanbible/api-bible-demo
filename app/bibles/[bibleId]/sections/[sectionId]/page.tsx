@@ -2,8 +2,8 @@ import { Page } from "@/components/Page";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { VerseContentSection } from "@/components/sections/VerseContentSection";
-import { Bible, SectionWithVerseContent } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
+import { client } from "@/utils/api";
+import { cacheLife } from "next/cache";
 import Link from "next/link";
 
 type SectionPageProps = {
@@ -16,19 +16,16 @@ type SectionPageProps = {
  * See our [Sections Guide](https://docs.api.bible/guides/sections) for more.
  */
 export default async function SectionPage(props: SectionPageProps) {
+  "use cache";
+  cacheLife("max");
   const { bibleId, sectionId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
   //Fetch a single section from the `/bibles/{bibleId}/sections/{sectionId}` endpoint
-  const section = await makeCachedApiRequest<SectionWithVerseContent>({
-    endpoint: `/bibles/${bibleId}/sections/${sectionId}`,
-    params: {
-      "content-type": "html",
-      "include-verse-spans": "true",
-    },
+  const { data: section } = await client.sections.get(bibleId, sectionId, {
+    contentType: "html",
+    includeVerseSpans: true,
   });
 
   return (
@@ -52,7 +49,7 @@ export default async function SectionPage(props: SectionPageProps) {
             title: "Sections",
           },
           {
-            title: section.title,
+            title: section.title!,
             href: `/bibles/${bibleId}/sections/${section.id}`,
           },
         ]}

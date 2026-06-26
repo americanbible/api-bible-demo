@@ -1,11 +1,11 @@
 import { HeaderSection } from "@/components/sections/HeaderSection";
-import { Bible, Book } from "@/types/api";
-import { makeCachedApiRequest } from "@/utils/cache";
 import { Book as BookIcon, BookText } from "lucide-react";
 import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
 import { JSONSection } from "@/components/sections/JSONSection";
 import { Page } from "@/components/Page";
+import { client } from "@/utils/api";
+import { cacheLife } from "next/cache";
 
 type BookPageProps = {
   params: Promise<{ bibleId: string; bookId: string }>;
@@ -17,16 +17,15 @@ type BookPageProps = {
  * See our [Books Guide](https://docs.api.bible/guides/books) for more.
  */
 export default async function BookPage(props: BookPageProps) {
+  "use cache";
+  cacheLife("max");
   const { bibleId, bookId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const bible = await makeCachedApiRequest<Bible>({
-    endpoint: `/bibles/${bibleId}`,
-  });
+  const { data: bible } = await client.bibles.get(bibleId);
   //Fetch a single book from the `/bibles/{bibleId}/books/{bookId}` endpoint
-  const book = await makeCachedApiRequest<Book>({
-    endpoint: `/bibles/${bibleId}/books/${bookId}`,
-    params: { "include-chapters": "true" },
+  const { data: book } = await client.books.get(bibleId, bookId, {
+    includeChapters: true,
   });
 
   return (
@@ -102,7 +101,7 @@ export default async function BookPage(props: BookPageProps) {
 
       <JSONSection
         //Truncate chapter display to reduce page clutter
-        json={{ ...book, chapters: `Array(${book.chapters.length})` }}
+        json={{ ...book, chapters: `Array(${book.chapters?.length})` }}
       />
     </Page>
   );
