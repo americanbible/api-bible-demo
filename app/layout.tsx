@@ -4,10 +4,6 @@ import "./globals.css";
 import { Navbar } from "@/components/NavBar";
 import { Suspense } from "react";
 import PageLoader from "@/components/PageLoader";
-import { Amplify } from "aws-amplify";
-import outputs from "../amplify_outputs.json";
-
-Amplify.configure(outputs);
 
 const ubuntu = Ubuntu({
   subsets: ["latin"],
