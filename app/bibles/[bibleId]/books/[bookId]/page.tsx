@@ -6,6 +6,8 @@ import { JSONSection } from "@/components/sections/JSONSection";
 import { Page } from "@/components/Page";
 import { client } from "@/utils/api";
 import { cacheLife } from "next/cache";
+import { Suspense } from "react";
+import PageLoader from "@/components/PageLoader";
 
 type BookPageProps = {
   params: Promise<{ bibleId: string; bookId: string }>;
@@ -17,9 +19,21 @@ type BookPageProps = {
  * See our [Books Guide](https://docs.api.bible/guides/books) for more.
  */
 export default async function BookPage(props: BookPageProps) {
+  const params = await props.params;
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <CachedBookPage {...params} />
+    </Suspense>
+  );
+}
+
+async function CachedBookPage({
+  bibleId,
+  bookId,
+}: Awaited<BookPageProps["params"]>) {
   "use cache";
   cacheLife("max");
-  const { bibleId, bookId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const { data: bible } = await client.bibles.get(bibleId);

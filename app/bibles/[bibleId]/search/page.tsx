@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Page } from "@/components/Page";
 import { client } from "@/utils/api";
 import { cacheLife } from "next/cache";
+import { Suspense } from "react";
+import PageLoader from "@/components/PageLoader";
 
 type SearchPageProps = {
   params: Promise<{ bibleId: string }>;
@@ -18,9 +20,20 @@ type SearchPageProps = {
  * *Note: You cannot call the  `/search` endpoint in the API without a `query` attached to it, this is simply a utility page to reduce API usage.*
  */
 export default async function SearchPage(props: SearchPageProps) {
+  const params = await props.params;
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <CachedSearchPage {...params} />
+    </Suspense>
+  );
+}
+
+async function CachedSearchPage({
+  bibleId,
+}: Awaited<SearchPageProps["params"]>) {
   "use cache";
   cacheLife("max");
-  const { bibleId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const { data: bible } = await client.bibles.get(bibleId);

@@ -4,7 +4,6 @@ import { InfoSection } from "@/components/sections/InfoSection";
 import { ListSection } from "@/components/sections/ListSection";
 import { client } from "@/utils/api";
 import { demoBibles } from "@/utils/demoBibles";
-import { cacheLife } from "next/cache";
 import Link from "next/link";
 
 /**
@@ -13,9 +12,8 @@ import Link from "next/link";
  *
  * See our [Bibles Guide](https://docs.api.bible/guides/bibles) for more.
  */
+
 export default async function BiblesPage() {
-  "use cache";
-  cacheLife("max");
   //Fetch bibles from the `/bibles` endpoint
   const { data: bibles } = await client.bibles.list({
     ids: demoBibles,

@@ -1,10 +1,12 @@
 import { Page } from "@/components/Page";
+import PageLoader from "@/components/PageLoader";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { VerseContentSection } from "@/components/sections/VerseContentSection";
 import { client } from "@/utils/api";
 import { cacheLife } from "next/cache";
 import Link from "next/link";
+import { Suspense } from "react";
 
 type VersePageProps = {
   params: Promise<{ bibleId: string; verseId: string }>;
@@ -16,9 +18,21 @@ type VersePageProps = {
  * See our [Verses Guide](https://docs.api.bible/guides/verses) for more.
  */
 export default async function VersePage(props: VersePageProps) {
+  const params = await props.params;
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <CachedVersePage {...params} />
+    </Suspense>
+  );
+}
+
+async function CachedVersePage({
+  bibleId,
+  verseId,
+}: Awaited<VersePageProps["params"]>) {
   "use cache";
   cacheLife("max");
-  const { bibleId, verseId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const { data: bible } = await client.bibles.get(bibleId);

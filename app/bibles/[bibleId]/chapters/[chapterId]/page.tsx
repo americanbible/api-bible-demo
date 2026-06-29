@@ -6,6 +6,8 @@ import { InfoSection } from "@/components/sections/InfoSection";
 import { Page } from "@/components/Page";
 import { client } from "@/utils/api";
 import { cacheLife } from "next/cache";
+import { Suspense } from "react";
+import PageLoader from "@/components/PageLoader";
 
 type ChapterPageProps = {
   params: Promise<{ bibleId: string; chapterId: string }>;
@@ -17,9 +19,21 @@ type ChapterPageProps = {
  * See our [Chapters Guide](https://docs.api.bible/guides/chapters) for more.
  */
 export default async function ChapterPage(props: ChapterPageProps) {
+  const params = await props.params;
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <CachedChapterPage {...params} />
+    </Suspense>
+  );
+}
+
+async function CachedChapterPage({
+  bibleId,
+  chapterId,
+}: Awaited<ChapterPageProps["params"]>) {
   "use cache";
   cacheLife("max");
-  const { bibleId, chapterId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const { data: bible } = await client.bibles.get(bibleId);

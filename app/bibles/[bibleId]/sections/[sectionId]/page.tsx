@@ -1,10 +1,12 @@
 import { Page } from "@/components/Page";
+import PageLoader from "@/components/PageLoader";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { VerseContentSection } from "@/components/sections/VerseContentSection";
 import { client } from "@/utils/api";
 import { cacheLife } from "next/cache";
 import Link from "next/link";
+import { Suspense } from "react";
 
 type SectionPageProps = {
   params: Promise<{ bibleId: string; sectionId: string }>;
@@ -16,9 +18,21 @@ type SectionPageProps = {
  * See our [Sections Guide](https://docs.api.bible/guides/sections) for more.
  */
 export default async function SectionPage(props: SectionPageProps) {
+  const params = await props.params;
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <CachedSectionPage {...params} />
+    </Suspense>
+  );
+}
+
+async function CachedSectionPage({
+  bibleId,
+  sectionId,
+}: Awaited<SectionPageProps["params"]>) {
   "use cache";
   cacheLife("max");
-  const { bibleId, sectionId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const { data: bible } = await client.bibles.get(bibleId);

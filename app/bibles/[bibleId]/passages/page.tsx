@@ -5,8 +5,10 @@ import Link from "next/link";
 import { Page } from "@/components/Page";
 import { client } from "@/utils/api";
 import { cacheLife } from "next/cache";
+import { Suspense } from "react";
+import PageLoader from "@/components/PageLoader";
 
-type SectionPageProps = {
+type PassagesPageProps = {
   params: Promise<{ bibleId: string }>;
 };
 
@@ -17,10 +19,21 @@ type SectionPageProps = {
  *
  * *Note: There is no corresponding `/passages` endpoint in the API, this is simply a utility page to assist in passage selection.*
  */
-export default async function SectionPage(props: SectionPageProps) {
+export default async function PassagesPage(props: PassagesPageProps) {
+  const params = await props.params;
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <CachedPassagesPage {...params} />
+    </Suspense>
+  );
+}
+
+async function CachedPassagesPage({
+  bibleId,
+}: Awaited<PassagesPageProps["params"]>) {
   "use cache";
   cacheLife("max");
-  const { bibleId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const { data: bible } = await client.bibles.get(bibleId);

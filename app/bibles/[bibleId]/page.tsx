@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Page } from "@/components/Page";
 import { client } from "@/utils/api";
 import { cacheLife } from "next/cache";
+import { Suspense } from "react";
+import PageLoader from "@/components/PageLoader";
 
 type BiblePageProps = {
   params: Promise<{ bibleId: string }>;
@@ -17,9 +19,18 @@ type BiblePageProps = {
  * See our [Bibles Guide](https://docs.api.bible/guides/bibles) for more.
  */
 export default async function BiblePage(props: BiblePageProps) {
+  const params = await props.params;
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <CachedBiblePage {...params} />
+    </Suspense>
+  );
+}
+
+async function CachedBiblePage({ bibleId }: Awaited<BiblePageProps["params"]>) {
   "use cache";
   cacheLife("max");
-  const { bibleId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const { data: bible } = await client.bibles.get(bibleId);

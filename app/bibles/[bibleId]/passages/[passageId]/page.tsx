@@ -1,4 +1,5 @@
 import { Page } from "@/components/Page";
+import PageLoader from "@/components/PageLoader";
 import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { VerseContentSection } from "@/components/sections/VerseContentSection";
@@ -7,6 +8,7 @@ import { BookText } from "lucide-react";
 import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 type PassagePageProps = {
   params: Promise<{ bibleId: string; passageId: string }>;
@@ -18,9 +20,21 @@ type PassagePageProps = {
  * See our [Passages Guide](https://docs.api.bible/guides/passages) for more.
  */
 export default async function PassagePage(props: PassagePageProps) {
+  const params = await props.params;
+
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <CachedPassagePage {...params} />
+    </Suspense>
+  );
+}
+
+async function CachedPassagePage({
+  bibleId,
+  passageId,
+}: Awaited<PassagePageProps["params"]>) {
   "use cache";
   cacheLife("max");
-  const { bibleId, passageId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const { data: bible } = await client.bibles.get(bibleId);
