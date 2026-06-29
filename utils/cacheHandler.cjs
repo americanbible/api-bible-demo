@@ -6,6 +6,20 @@ const {
 } = require("@aws-sdk/client-s3");
 const v8 = require("node:v8");
 
+function jsonReplacer(key, value) {
+  if (value instanceof Map) {
+    return { __type: "Map", value: Array.from(value.entries()) };
+  }
+  return value;
+}
+
+function jsonReviver(key, value) {
+  if (value && typeof value === "object" && value.__type === "Map") {
+    return new Map(value.value);
+  }
+  return value;
+}
+
 const s3 = new S3Client();
 const BUCKET_NAME = process.env.NEXTJS_CACHE_BUCKET_NAME;
 const BUILD_ID = process.env.NEXT_BUILD_ID || "default"; // Prevents cache collisions between builds
@@ -26,8 +40,22 @@ class S3CacheHandler {
       const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key });
       const response = await s3.send(command);
 
-      const buffer = Buffer.from(await response.Body.transformToByteArray());
-      return v8.deserialize(buffer);
+      // const buffer = Buffer.from(await response.Body.transformToByteArray());
+      // return v8.deserialize(buffer);
+
+      const dataStr = await response.Body.transformToString();
+      const cacheEntry = JSON.parse(dataStr, jsonReviver);
+      if (
+        cacheEntry?.value?.segmentData &&
+        !(cacheEntry.value.segmentData instanceof Map)
+      ) {
+        console.warn(
+          `[Cache Safety] segmentData for ${key} is flat. Forcing fallback.`,
+        );
+        return null;
+      }
+
+      return cacheEntry;
     } catch (error) {
       if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
         return null;
@@ -53,13 +81,22 @@ class S3CacheHandler {
         payload = await this.streamToBuffer(entry);
       }
 
-      const buffer = v8.serialize(payload);
+      // const buffer = v8.serialize(payload);
+
+      // const command = new PutObjectCommand({
+      //   Bucket: BUCKET_NAME,
+      //   Key: s3Key,
+      //   Body: buffer,
+      //   ContentType: "application/octet-stream",
+      // });
+
+      const serializedData = JSON.stringify(payload, jsonReplacer);
 
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: s3Key,
-        Body: buffer,
-        ContentType: "application/octet-stream",
+        Body: serializedData,
+        ContentType: "application/json",
       });
 
       await s3.send(command);
