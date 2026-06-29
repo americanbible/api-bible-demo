@@ -113,6 +113,12 @@ class S3CacheHandler {
     }
     return Buffer.concat(chunks);
   }
+
+  async revalidateTag(tag) {
+    // If you aren't storing tags yet, leaving this as a no-op
+    // satisfies the Next.js compiler interface requirements.
+    return;
+  }
 }
 
 module.exports = S3CacheHandler;
