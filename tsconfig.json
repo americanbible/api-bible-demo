@@ -29,7 +29,7 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts",
-    "utils/cacheHandler.js"
+    "utils/cacheHandler.cjs"
   ],
   "exclude": ["node_modules"]
 }
