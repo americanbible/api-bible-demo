@@ -7,7 +7,7 @@ frontend:
         - npm install
     build:
       commands:
-        - env | grep -e API_BIBLE_API_KEY >> ./.env.production
+        - env | grep -e API_BIBLE_API_KEY -e CACHE_BUCKET_NAME >> ./.env.production
         - npm run build
   artifacts:
     baseDirectory: .next
