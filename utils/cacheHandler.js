@@ -25,13 +25,7 @@ export default class S3CacheHandler {
       const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key });
       const response = await s3.send(command);
 
-      const uint8Array = await response.Body.transformToByteArray();
-      const buffer = Buffer.from(
-        uint8Array.buffer,
-        uint8Array.byteOffset,
-        uint8Array.byteLength,
-      );
-
+      const buffer = Buffer.from(await response.Body.transformToByteArray());
       return v8.deserialize(buffer);
     } catch (error) {
       if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
