@@ -7,7 +7,7 @@ const {
 const v8 = require("node:v8");
 
 const s3 = new S3Client();
-const BUCKET_NAME = process.env.NEXTJS_CACHE_BUCKET_NAME;
+const BUCKET_NAME = process.env.CACHE_BUCKET_NAME;
 const BUILD_ID = process.env.NEXT_BUILD_ID || "default"; // Prevents cache collisions between builds
 
 module.exports = class S3CacheHandler {
