@@ -78,5 +78,4 @@ class CacheHandler {
   }
 }
 
-// 👈 ABSOLUTE REQUIREMENT: Must be direct assignment, no wrapping object!
 module.exports = CacheHandler;
