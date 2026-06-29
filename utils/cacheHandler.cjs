@@ -4,34 +4,30 @@ const {
   GetObjectCommand,
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
-const v8 = require("node:v8");
 
 const s3 = new S3Client();
 const BUCKET_NAME = process.env.CACHE_BUCKET_NAME;
 const BUILD_ID = process.env.NEXT_BUILD_ID || "default"; // Prevents cache collisions between builds
 
-module.exports = class S3CacheHandler {
+class S3CacheHandler {
   constructor(options) {
     this.options = options;
   }
 
   // Next.js calls get() to retrieve the cached component state
   async get(key) {
-    if (!BUCKET_NAME) {
-      return null;
-    }
-
     const s3Key = `${BUILD_ID}/${key}`;
     try {
       const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key });
       const response = await s3.send(command);
 
-      const buffer = Buffer.from(await response.Body.transformToByteArray());
-      return v8.deserialize(buffer);
+      // Transform the S3 response string back into the required cache format
+      const dataStr = await response.Body.transformToString();
+      const cacheEntry = JSON.parse(dataStr);
+
+      return cacheEntry;
     } catch (error) {
-      if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
-        return null;
-      }
+      if (error.name === "NoSuchKey") return null; // Cache miss
       console.error("S3 Cache Get Error:", error);
       return null;
     }
@@ -39,10 +35,6 @@ module.exports = class S3CacheHandler {
 
   // Next.js calls set() to store the "use cache" component payload
   async set(key, entry) {
-    if (!BUCKET_NAME) {
-      return;
-    }
-
     const s3Key = `${BUILD_ID}/${key}`;
     try {
       // Modern cache components pass entry value or stream payloads
@@ -53,13 +45,11 @@ module.exports = class S3CacheHandler {
         payload = await this.streamToBuffer(entry);
       }
 
-      const buffer = v8.serialize(payload);
-
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: s3Key,
-        Body: buffer,
-        ContentType: "application/octet-stream",
+        Body: JSON.stringify(payload),
+        ContentType: "application/json",
       });
 
       await s3.send(command);
@@ -76,4 +66,10 @@ module.exports = class S3CacheHandler {
     }
     return Buffer.concat(chunks);
   }
-};
+
+  async revalidateTag() {
+    return;
+  }
+}
+
+export default S3CacheHandler;
