@@ -10,7 +10,6 @@ const prodNextConfig: NextConfig = {
   cacheHandlers: {
     default: require.resolve("./utils/cacheHandler.js"),
   },
-  staticPageGenerationTimeout: 300,
 };
 
 const nextConfig: NextConfig =
