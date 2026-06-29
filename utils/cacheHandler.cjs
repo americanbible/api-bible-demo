@@ -1,76 +1,80 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const {
   S3Client,
-  GetObjectCommand,
   PutObjectCommand,
+  GetObjectCommand,
 } = require("@aws-sdk/client-s3");
+const v8 = require("node:v8");
 
-const s3 = new S3Client({ region: process.env.AWS_REGION });
-const BUCKET_NAME = process.env.CACHE_BUCKET_NAME;
-const BUILD_ID = process.env.NEXT_BUILD_ID || "default-build";
+const s3 = new S3Client();
+const BUCKET_NAME = process.env.NEXTJS_CACHE_BUCKET_NAME;
+const BUILD_ID = process.env.NEXT_BUILD_ID || "default"; // Prevents cache collisions between builds
 
-// Global, in-memory fallback to satisfy Next.js during local compilation/amplify builds
-const localMemoryCache = new Map();
-
-function jsonReplacer(key, value) {
-  if (value instanceof Map) {
-    return { __type: "Map", value: Array.from(value.entries()) };
-  }
-  return value;
-}
-
-function jsonReviver(key, value) {
-  if (value && typeof value === "object" && value.__type === "Map") {
-    return new Map(value.value);
-  }
-  return value;
-}
-
-class CacheHandler {
+class S3CacheHandler {
   constructor(options) {
     this.options = options;
   }
 
+  // Next.js calls get() to retrieve the cached component state
   async get(key) {
-    // Fall back to memory build cache if S3 environment variables aren't injected yet
     if (!BUCKET_NAME) {
-      return localMemoryCache.get(key) || undefined;
+      return null;
     }
 
     const s3Key = `${BUILD_ID}/${key}`;
     try {
       const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key });
       const response = await s3.send(command);
-      const dataStr = await response.Body.transformToString();
 
-      return JSON.parse(dataStr, jsonReviver);
+      const buffer = Buffer.from(await response.Body.transformToByteArray());
+      return v8.deserialize(buffer);
     } catch (error) {
-      // Check local memory first on S3 miss to prevent cold-start crashes
-      if (localMemoryCache.has(key)) return localMemoryCache.get(key);
-      return undefined;
+      if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
+        return null;
+      }
+      console.error("S3 Cache Get Error:", error);
+      return null;
     }
   }
 
-  async set(key, value, ctx) {
-    // Always store locally first so Next.js build step succeeds
-    localMemoryCache.set(key, value);
-
-    if (!BUCKET_NAME) return;
+  // Next.js calls set() to store the "use cache" component payload
+  async set(key, entry) {
+    if (!BUCKET_NAME) {
+      return;
+    }
 
     const s3Key = `${BUILD_ID}/${key}`;
     try {
-      const serializedData = JSON.stringify(value, jsonReplacer);
-      await s3.send(
-        new PutObjectCommand({
-          Bucket: BUCKET_NAME,
-          Key: s3Key,
-          Body: serializedData,
-          ContentType: "application/json",
-        }),
-      );
+      // Modern cache components pass entry value or stream payloads
+      let payload = entry;
+
+      // Handle streams explicitly if present
+      if (entry && typeof entry.pipe === "function") {
+        payload = await this.streamToBuffer(entry);
+      }
+
+      const buffer = v8.serialize(payload);
+
+      const command = new PutObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: s3Key,
+        Body: buffer,
+        ContentType: "application/octet-stream",
+      });
+
+      await s3.send(command);
     } catch (error) {
       console.error("S3 Cache Set Error:", error);
     }
+  }
+
+  // Helper to resolve component stream data to buffer safely
+  async streamToBuffer(stream) {
+    const chunks = [];
+    for await (const chunk of stream) {
+      chunks.push(typeof chunk === "string" ? Buffer.from(chunk) : chunk);
+    }
+    return Buffer.concat(chunks);
   }
 
   async revalidateTag(tag) {
@@ -78,4 +82,4 @@ class CacheHandler {
   }
 }
 
-module.exports = CacheHandler;
+module.exports = S3CacheHandler;
