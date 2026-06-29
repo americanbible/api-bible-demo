@@ -1,11 +1,5 @@
-import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-} from "@aws-sdk/client-s3";
+import { uploadData, downloadData } from "aws-amplify/storage";
 
-const s3 = new S3Client();
-const BUCKET_NAME = process.env.NEXTJS_CACHE_BUCKET_NAME;
 const BUILD_ID = process.env.NEXT_BUILD_ID || "default"; // Prevents cache collisions between builds
 
 class S3CacheHandler {
@@ -17,12 +11,10 @@ class S3CacheHandler {
   async get(key) {
     const s3Key = `${BUILD_ID}/${key}`;
     try {
-      const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key });
-      const response = await s3.send(command);
+      const response = await downloadData({ path: s3Key }).result;
 
       // Transform the S3 response string back into the required cache format
-      const dataStr = await response.Body.transformToString();
-      const cacheEntry = JSON.parse(dataStr);
+      const cacheEntry = await response.body.json();
 
       return cacheEntry;
     } catch (error) {
@@ -44,14 +36,11 @@ class S3CacheHandler {
         payload = await this.streamToBuffer(entry);
       }
 
-      const command = new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: s3Key,
-        Body: JSON.stringify(payload),
-        ContentType: "application/json",
-      });
-
-      await s3.send(command);
+      await uploadData({
+        path: s3Key,
+        data: JSON.stringify(payload),
+        options: { contentType: "application/json" },
+      }).result;
     } catch (error) {
       console.error("S3 Cache Set Error:", error);
     }
