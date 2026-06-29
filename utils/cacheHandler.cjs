@@ -34,7 +34,7 @@ class CacheHandler {
   async get(key) {
     // Fall back to memory build cache if S3 environment variables aren't injected yet
     if (!BUCKET_NAME) {
-      return localMemoryCache.get(key) || null;
+      return localMemoryCache.get(key) || undefined;
     }
 
     const s3Key = `${BUILD_ID}/${key}`;
@@ -47,7 +47,7 @@ class CacheHandler {
     } catch (error) {
       // Check local memory first on S3 miss to prevent cold-start crashes
       if (localMemoryCache.has(key)) return localMemoryCache.get(key);
-      return null;
+      return undefined;
     }
   }
 
