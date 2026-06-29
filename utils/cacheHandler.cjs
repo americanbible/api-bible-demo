@@ -9,7 +9,7 @@ const s3 = new S3Client();
 const BUCKET_NAME = process.env.CACHE_BUCKET_NAME;
 const BUILD_ID = process.env.NEXT_BUILD_ID || "default"; // Prevents cache collisions between builds
 
-class S3CacheHandler {
+module.exports = class S3CacheHandler {
   constructor(options) {
     this.options = options;
   }
@@ -70,6 +70,4 @@ class S3CacheHandler {
   async revalidateTag() {
     return;
   }
-}
-
-export default S3CacheHandler;
+};
