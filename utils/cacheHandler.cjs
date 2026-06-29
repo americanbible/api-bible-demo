@@ -5,12 +5,13 @@ const {
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
 
-// Initialize S3 Client
 const s3 = new S3Client({ region: process.env.AWS_REGION });
-const BUCKET_NAME = process.env.NEXTJS_CACHE_BUCKET_NAME;
-const BUILD_ID = process.env.NEXT_BUILD_ID || "default";
+const BUCKET_NAME = process.env.CACHE_BUCKET_NAME;
+const BUILD_ID = process.env.NEXT_BUILD_ID || "default-build";
 
-// Map Replacer/Reviver Pattern to keep P.get() working
+// Global, in-memory fallback to satisfy Next.js during local compilation/amplify builds
+const localMemoryCache = new Map();
+
 function jsonReplacer(key, value) {
   if (value instanceof Map) {
     return { __type: "Map", value: Array.from(value.entries()) };
@@ -25,66 +26,57 @@ function jsonReviver(key, value) {
   return value;
 }
 
-module.exports = class CacheHandler {
+class CacheHandler {
   constructor(options) {
     this.options = options;
   }
 
   async get(key) {
-    // 1. Next.js needs undefined if caching isn't ready/enabled yet
-    if (!BUCKET_NAME) return undefined;
+    // Fall back to memory build cache if S3 environment variables aren't injected yet
+    if (!BUCKET_NAME) {
+      return localMemoryCache.get(key) || undefined;
+    }
 
     const s3Key = `${BUILD_ID}/${key}`;
     try {
       const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key });
       const response = await s3.send(command);
-
       const dataStr = await response.Body.transformToString();
-      const cacheEntry = JSON.parse(dataStr, jsonReviver);
 
-      // Validate data health defensively
-      if (
-        cacheEntry?.value?.segmentData &&
-        !(cacheEntry.value.segmentData instanceof Map)
-      ) {
-        return undefined;
-      }
-
-      // 2. Return undefined if nothing was actually parsed
-      return cacheEntry || undefined;
+      return JSON.parse(dataStr, jsonReviver);
     } catch (error) {
-      // 3. CRITICAL: S3 cache miss MUST return undefined, not null
-      if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
-        return undefined;
-      }
-      console.error("S3 Cache Get Error:", error);
+      // Check local memory first on S3 miss to prevent cold-start crashes
+      if (localMemoryCache.has(key)) return localMemoryCache.get(key);
       return undefined;
     }
   }
 
   async set(key, value, ctx) {
-    if (!BUCKET_NAME) return;
-    const s3Key = `${BUILD_ID}/${key}`;
+    // Always store locally first so Next.js build step succeeds
+    localMemoryCache.set(key, value);
 
+    if (!BUCKET_NAME) return;
+
+    const s3Key = `${BUILD_ID}/${key}`;
     try {
       const serializedData = JSON.stringify(value, jsonReplacer);
-      const command = new PutObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: s3Key,
-        Body: serializedData,
-        ContentType: "application/json",
-      });
-
-      await s3.send(command);
+      await s3.send(
+        new PutObjectCommand({
+          Bucket: BUCKET_NAME,
+          Key: s3Key,
+          Body: serializedData,
+          ContentType: "application/json",
+        }),
+      );
     } catch (error) {
       console.error("S3 Cache Set Error:", error);
     }
   }
 
-  // 4. MANDATORY METHOD: Next.js crashes during build if this is missing
   async revalidateTag(tag) {
-    // If you aren't storing tags yet, leaving this as a no-op
-    // satisfies the Next.js compiler interface requirements.
     return;
   }
-};
+}
+
+// 👈 ABSOLUTE REQUIREMENT: Must be direct assignment, no wrapping object!
+module.exports = CacheHandler;
