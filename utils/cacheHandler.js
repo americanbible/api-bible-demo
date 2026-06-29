@@ -1,6 +1,6 @@
 import { uploadData, downloadData } from "aws-amplify/storage";
 import { Amplify } from "aws-amplify";
-import outputs from "../amplify_outputs.json";
+import outputs from "../amplify_outputs.json" with { type: "json" };
 
 Amplify.configure(outputs);
 
