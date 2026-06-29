@@ -32,22 +32,39 @@ class CacheHandler {
   }
 
   async get(key) {
-    // Fall back to memory build cache if S3 environment variables aren't injected yet
-    if (!BUCKET_NAME) {
-      return localMemoryCache.get(key) || undefined;
-    }
+    // Standard template shape Next.js requires to avoid invariant failure on misses
+    const missFallback = {
+      lastModified: Date.now(),
+      value: null,
+    };
+
+    if (!BUCKET_NAME) return missFallback;
 
     const s3Key = `${BUILD_ID}/${key}`;
     try {
       const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key });
       const response = await s3.send(command);
       const dataStr = await response.Body.transformToString();
+      const cacheEntry = JSON.parse(dataStr, jsonReviver);
 
-      return JSON.parse(dataStr, jsonReviver);
+      // Scrub corrupted data shapes before Next.js consumes it
+      if (
+        cacheEntry?.value?.segmentData &&
+        !(cacheEntry.value.segmentData instanceof Map)
+      ) {
+        delete cacheEntry.value.segmentData;
+      }
+
+      // If S3 returned a broken structural object, revert to the fallback shape
+      return cacheEntry && typeof cacheEntry === "object"
+        ? cacheEntry
+        : missFallback;
     } catch (error) {
-      // Check local memory first on S3 miss to prevent cold-start crashes
-      if (localMemoryCache.has(key)) return localMemoryCache.get(key);
-      return undefined;
+      if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
+        return missFallback;
+      }
+      console.error("S3 Cache Get Error:", error);
+      return missFallback;
     }
   }
 
