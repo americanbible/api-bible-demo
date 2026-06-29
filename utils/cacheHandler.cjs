@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+// utils/cacheHandler.cjs
 const {
   S3Client,
   GetObjectCommand,
@@ -8,6 +9,34 @@ const {
 const s3 = new S3Client({ region: process.env.AWS_REGION || "us-east-1" });
 const BUCKET_NAME = process.env.CACHE_BUCKET_NAME;
 const BUILD_ID = process.env.NEXT_BUILD_ID || "default-build";
+
+// Deeply ensure that no object can ever be returned to Next.js without a working .get() method
+function patchCacheEntry(entry) {
+  if (!entry || typeof entry !== "object") return entry;
+
+  // 1. Target the underlying page value layer
+  if (entry.value && typeof entry.value === "object") {
+    const val = entry.value;
+
+    // 2. Next.js 14.2+ / 15+ stores segmentData and rscData here
+    if (val.segmentData && !(val.segmentData instanceof Map)) {
+      if (typeof val.segmentData === "object" && !val.segmentData.get) {
+        // Hijack the plain object and give it an inline Map-compatible getter
+        val.segmentData.get = function (key) {
+          return this[key] || undefined;
+        };
+        val.segmentData.set = function (key, value) {
+          this[key] = value;
+          return this;
+        };
+        val.segmentData.has = function (key) {
+          return key in this;
+        };
+      }
+    }
+  }
+  return entry;
+}
 
 function jsonReplacer(key, value) {
   if (value instanceof Map) {
@@ -29,8 +58,6 @@ module.exports = class CacheHandler {
   }
 
   async get(key) {
-    // If bucket credentials aren't loaded yet during the early compilation phase,
-    // safely return undefined to allow standard fallback execution.
     if (!BUCKET_NAME) return undefined;
 
     const s3Key = `${BUILD_ID}/${key}`;
@@ -40,34 +67,17 @@ module.exports = class CacheHandler {
       const dataStr = await response.Body.transformToString();
       const cacheEntry = JSON.parse(dataStr, jsonReviver);
 
-      // Deep clean maps to prevent P.get errors
-      if (
-        cacheEntry?.value?.segmentData &&
-        !(cacheEntry.value.segmentData instanceof Map)
-      ) {
-        delete cacheEntry.value.segmentData;
-      }
-
-      // Next.js expects structural data envelopes to match what was stored
-      if (
-        cacheEntry &&
-        typeof cacheEntry === "object" &&
-        "value" in cacheEntry
-      ) {
-        return cacheEntry;
-      }
-
-      return undefined;
+      // Protect against read-corruptions from S3
+      return patchCacheEntry(cacheEntry);
     } catch (error) {
-      // Catch standard S3 missing object instances
       if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
-        // 🌟 THE TRUE CONTRACT: If Next.js expects a PAGE, return a correct object layout structure.
+        // Return a mock payload that is immune to downstream JSON conversion loops
         if (
           key.startsWith("app/") ||
           key.includes("page") ||
           key.includes("layout")
         ) {
-          return {
+          const freshMock = {
             lastModified: Date.now(),
             value: {
               kind: "PAGE",
@@ -79,15 +89,14 @@ module.exports = class CacheHandler {
               segmentData: new Map(),
             },
           };
+          return patchCacheEntry(freshMock);
         }
 
-        // 🌟 If Next.js is requesting a standard data fetch, return a FETCH template structure
-        // to pass the internal type verification check safely.
         if (key.startsWith("fetch/")) {
           return {
             lastModified: Date.now(),
             value: {
-              kind: "FETCH", // 👈 This fixes the invariant error for data calls
+              kind: "FETCH",
               data: { body: "", status: 200, headers: {} },
               tags: [],
             },
@@ -103,17 +112,12 @@ module.exports = class CacheHandler {
   async set(key, value, ctx) {
     if (!BUCKET_NAME) return;
 
-    // Prevent saving corrupt shapes into layout systems
-    if (
-      value?.value?.segmentData &&
-      !(value.value.segmentData instanceof Map)
-    ) {
-      return;
-    }
+    // Intercept Next.js's flattened objects before uploading to S3
+    const sanitizedValue = patchCacheEntry(value);
 
     const s3Key = `${BUILD_ID}/${key}`;
     try {
-      const serializedData = JSON.stringify(value, jsonReplacer);
+      const serializedData = JSON.stringify(sanitizedValue, jsonReplacer);
       await s3.send(
         new PutObjectCommand({
           Bucket: BUCKET_NAME,
