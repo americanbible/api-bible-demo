@@ -17,7 +17,7 @@ type ChaptersListPageProps = {
  *
  * See our [Chapters Guide](https://docs.api.bible/guides/chapters) for more.
  */
-export default async function BookPage(props: ChaptersListPageProps) {
+export default async function ChaptersListPage(props: ChaptersListPageProps) {
   const params = await props.params;
 
   return (
