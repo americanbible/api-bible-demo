@@ -6,6 +6,8 @@ import { Page } from "@/components/Page";
 import { client } from "@/utils/api";
 import { cacheLife } from "next/cache";
 
+export const dynamicParams = true;
+
 type SectionPageProps = {
   params: Promise<{ bibleId: string }>;
 };

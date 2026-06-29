@@ -7,6 +7,8 @@ import { demoBibles } from "@/utils/demoBibles";
 import { cacheLife } from "next/cache";
 import Link from "next/link";
 
+export const dynamicParams = true;
+
 /**
  * Bibles page of the application. Provides the list of Bibles this application has access to.
  * The full list of demo bibles can  be found in [demoBibles.ts](../utils/demoBibles.ts).

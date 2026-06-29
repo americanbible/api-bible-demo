@@ -6,6 +6,8 @@ import { client } from "@/utils/api";
 import { cacheLife } from "next/cache";
 import Link from "next/link";
 
+export const dynamicParams = true;
+
 type VersesListPageProps = {
   params: Promise<{ bibleId: string; chapterId: string }>;
 };
