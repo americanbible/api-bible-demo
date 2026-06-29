@@ -8,8 +8,6 @@ import { cacheLife } from "next/cache";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-export const dynamicParams = true;
-
 type PassagePageProps = {
   params: Promise<{ bibleId: string; passageId: string }>;
 };

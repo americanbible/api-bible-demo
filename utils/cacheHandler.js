@@ -13,6 +13,7 @@ class S3CacheHandler {
 
   // Next.js calls get() to retrieve the cached component state
   async get(key) {
+    return null;
     const s3Key = `${BUILD_ID}/${key}`;
     try {
       const response = await downloadData({ path: s3Key }).result;
