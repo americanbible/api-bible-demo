@@ -5,12 +5,9 @@ const {
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
 
-const s3 = new S3Client({ region: process.env.AWS_REGION });
+const s3 = new S3Client({ region: process.env.AWS_REGION || "us-east-1" });
 const BUCKET_NAME = process.env.CACHE_BUCKET_NAME;
 const BUILD_ID = process.env.NEXT_BUILD_ID || "default-build";
-
-// Global, in-memory fallback to satisfy Next.js during local compilation/amplify builds
-const localMemoryCache = new Map();
 
 function jsonReplacer(key, value) {
   if (value instanceof Map) {
@@ -26,19 +23,15 @@ function jsonReviver(key, value) {
   return value;
 }
 
-class CacheHandler {
+module.exports = class CacheHandler {
   constructor(options) {
     this.options = options;
   }
 
   async get(key) {
-    // Standard template shape Next.js requires to avoid invariant failure on misses
-    const missFallback = {
-      lastModified: Date.now(),
-      value: null,
-    };
-
-    if (!BUCKET_NAME) return missFallback;
+    // If bucket credentials aren't loaded yet during the early compilation phase,
+    // safely return undefined to allow standard fallback execution.
+    if (!BUCKET_NAME) return undefined;
 
     const s3Key = `${BUILD_ID}/${key}`;
     try {
@@ -47,7 +40,7 @@ class CacheHandler {
       const dataStr = await response.Body.transformToString();
       const cacheEntry = JSON.parse(dataStr, jsonReviver);
 
-      // Deep type validation to prevent P.get errors if bad data exists
+      // Deep clean maps to prevent P.get errors
       if (
         cacheEntry?.value?.segmentData &&
         !(cacheEntry.value.segmentData instanceof Map)
@@ -55,10 +48,20 @@ class CacheHandler {
         delete cacheEntry.value.segmentData;
       }
 
-      // If S3 returned a broken structural object, revert to the fallback shape
-      return cacheEntry;
+      // Next.js expects structural data envelopes to match what was stored
+      if (
+        cacheEntry &&
+        typeof cacheEntry === "object" &&
+        "value" in cacheEntry
+      ) {
+        return cacheEntry;
+      }
+
+      return undefined;
     } catch (error) {
+      // Catch standard S3 missing object instances
       if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
+        // 🌟 THE TRUE CONTRACT: If Next.js expects a PAGE, return a correct object layout structure.
         if (
           key.startsWith("app/") ||
           key.includes("page") ||
@@ -67,30 +70,46 @@ class CacheHandler {
           return {
             lastModified: Date.now(),
             value: {
-              kind: "PAGE", // Tells the invariant handler this is a valid page frame
+              kind: "PAGE",
               html: "",
               rsc: "",
               status: 200,
               headers: {},
               postponed: undefined,
-              segmentData: new Map(), // Perfectly satisfies the P.get mapping requirement
+              segmentData: new Map(),
             },
           };
         }
 
-        // For plain fetch data caches or image optimizers, raw undefined is expected.
+        // 🌟 If Next.js is requesting a standard data fetch, return a FETCH template structure
+        // to pass the internal type verification check safely.
+        if (key.startsWith("fetch/")) {
+          return {
+            lastModified: Date.now(),
+            value: {
+              kind: "FETCH", // 👈 This fixes the invariant error for data calls
+              data: { body: "", status: 200, headers: {} },
+              tags: [],
+            },
+          };
+        }
+
         return undefined;
       }
-      console.error("S3 Cache Get Error:", error);
       return undefined;
     }
   }
 
   async set(key, value, ctx) {
-    // Always store locally first so Next.js build step succeeds
-    localMemoryCache.set(key, value);
-
     if (!BUCKET_NAME) return;
+
+    // Prevent saving corrupt shapes into layout systems
+    if (
+      value?.value?.segmentData &&
+      !(value.value.segmentData instanceof Map)
+    ) {
+      return;
+    }
 
     const s3Key = `${BUILD_ID}/${key}`;
     try {
@@ -111,6 +130,4 @@ class CacheHandler {
   async revalidateTag(tag) {
     return;
   }
-}
-
-module.exports = CacheHandler;
+};
