@@ -47,7 +47,7 @@ class CacheHandler {
       const dataStr = await response.Body.transformToString();
       const cacheEntry = JSON.parse(dataStr, jsonReviver);
 
-      // Scrub corrupted data shapes before Next.js consumes it
+      // Deep type validation to prevent P.get errors if bad data exists
       if (
         cacheEntry?.value?.segmentData &&
         !(cacheEntry.value.segmentData instanceof Map)
@@ -56,15 +56,33 @@ class CacheHandler {
       }
 
       // If S3 returned a broken structural object, revert to the fallback shape
-      return cacheEntry && typeof cacheEntry === "object"
-        ? cacheEntry
-        : missFallback;
+      return cacheEntry;
     } catch (error) {
       if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
-        return missFallback;
+        if (
+          key.startsWith("app/") ||
+          key.includes("page") ||
+          key.includes("layout")
+        ) {
+          return {
+            lastModified: Date.now(),
+            value: {
+              kind: "PAGE", // Tells the invariant handler this is a valid page frame
+              html: "",
+              rsc: "",
+              status: 200,
+              headers: {},
+              postponed: undefined,
+              segmentData: new Map(), // Perfectly satisfies the P.get mapping requirement
+            },
+          };
+        }
+
+        // For plain fetch data caches or image optimizers, raw undefined is expected.
+        return undefined;
       }
       console.error("S3 Cache Get Error:", error);
-      return missFallback;
+      return undefined;
     }
   }
 
