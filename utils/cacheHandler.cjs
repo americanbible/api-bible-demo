@@ -8,7 +8,7 @@ const {
 // Initialize S3 Client
 const s3 = new S3Client({ region: process.env.AWS_REGION });
 const BUCKET_NAME = process.env.NEXTJS_CACHE_BUCKET_NAME;
-const BUILD_ID = process.env.NEXT_BUILD_ID || "default-build";
+const BUILD_ID = process.env.NEXT_BUILD_ID || "default";
 
 // Map Replacer/Reviver Pattern to keep P.get() working
 function jsonReplacer(key, value) {
