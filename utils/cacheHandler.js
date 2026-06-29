@@ -31,6 +31,7 @@ class S3CacheHandler {
 
   // Next.js calls set() to store the "use cache" component payload
   async set(key, entry) {
+    return;
     const s3Key = `${BUILD_ID}/${key}`;
     try {
       // Modern cache components pass entry value or stream payloads
