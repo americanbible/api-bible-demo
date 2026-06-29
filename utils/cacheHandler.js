@@ -1,8 +1,9 @@
-import {
+const {
   S3Client,
   PutObjectCommand,
   GetObjectCommand,
-} from "@aws-sdk/client-s3";
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+} = require("@aws-sdk/client-s3");
 
 const s3 = new S3Client();
 const BUCKET_NAME = process.env.NEXTJS_CACHE_BUCKET_NAME;
