@@ -3,12 +3,13 @@ import {
   PutObjectCommand,
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
+import v8 from "node:v8";
 
 const s3 = new S3Client();
 const BUCKET_NAME = process.env.NEXTJS_CACHE_BUCKET_NAME;
 const BUILD_ID = process.env.NEXT_BUILD_ID || "default"; // Prevents cache collisions between builds
 
-class S3CacheHandler {
+export default class S3CacheHandler {
   constructor(options) {
     this.options = options;
   }
@@ -24,13 +25,12 @@ class S3CacheHandler {
       const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key });
       const response = await s3.send(command);
 
-      // Transform the S3 response string back into the required cache format
-      const dataStr = await response.Body.transformToString();
-      const cacheEntry = JSON.parse(dataStr);
-
-      return cacheEntry;
+      const buffer = Buffer.from(await response.Body.transformToByteArray());
+      return v8.deserialize(buffer);
     } catch (error) {
-      if (error.name === "NoSuchKey") return null; // Cache miss
+      if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
+        return null;
+      }
       console.error("S3 Cache Get Error:", error);
       return null;
     }
@@ -52,11 +52,13 @@ class S3CacheHandler {
         payload = await this.streamToBuffer(entry);
       }
 
+      const buffer = v8.serialize(payload);
+
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: s3Key,
-        Body: JSON.stringify(payload),
-        ContentType: "application/json",
+        Body: buffer,
+        ContentType: "application/octet-stream",
       });
 
       await s3.send(command);
@@ -74,5 +76,3 @@ class S3CacheHandler {
     return Buffer.concat(chunks);
   }
 }
-
-export default S3CacheHandler;
