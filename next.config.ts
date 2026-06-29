@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   cacheHandlers: {
     default: require.resolve("./utils/cacheHandler.js"),
   },
+  cacheMaxMemorySize: 0,
 };
 
 export default nextConfig;

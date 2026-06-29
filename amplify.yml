@@ -5,7 +5,6 @@ frontend:
       commands:
         - env
         - npm install
-        - rm -rf .next/cache
     build:
       commands:
         - env | grep -e API_BIBLE_API_KEY >> ./.env.production
@@ -15,5 +14,3 @@ frontend:
     files:
       - "**/*"
   buildPath: /
-  cache:
-    paths: []
