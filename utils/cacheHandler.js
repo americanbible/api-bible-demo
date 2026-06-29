@@ -5,6 +5,21 @@ import {
 } from "@aws-sdk/client-s3";
 import v8 from "node:v8";
 
+function jsonReplacer(key, value) {
+  if (value instanceof Map) {
+    return { __type: "Map", value: Array.from(value.entries()) };
+  }
+  return value;
+}
+
+// Helper to fully restore native Maps when parsed back
+function jsonReviver(key, value) {
+  if (value && typeof value === "object" && value.__type === "Map") {
+    return new Map(value.value);
+  }
+  return value;
+}
+
 const s3 = new S3Client();
 const BUCKET_NAME = process.env.NEXTJS_CACHE_BUCKET_NAME;
 const BUILD_ID = process.env.NEXT_BUILD_ID || "default"; // Prevents cache collisions between builds
@@ -23,10 +38,28 @@ export default class S3CacheHandler {
     const s3Key = `${BUILD_ID}/${key}`;
     try {
       const command = new GetObjectCommand({ Bucket: BUCKET_NAME, Key: s3Key });
-      const response = await s3.send(command);
+      // const response = await s3.send(command);
 
-      const buffer = Buffer.from(await response.Body.transformToByteArray());
-      return v8.deserialize(buffer);
+      // const buffer = Buffer.from(await response.Body.transformToByteArray());
+      // return v8.deserialize(buffer);
+      // 1. Read S3 body strictly as a clean text string
+      const dataStr = await response.Body.transformToString();
+
+      // 2. Parse using the reviver so that "P.get()" (Map.prototype.get) is instantly available
+      const cacheEntry = JSON.parse(dataStr, jsonReviver);
+
+      // 3. Runtime defensive fallback
+      if (
+        cacheEntry?.value?.segmentData &&
+        !(cacheEntry.value.segmentData instanceof Map)
+      ) {
+        console.warn(
+          `[Cache Safety] segmentData for ${key} is flat. Forcing fallback.`,
+        );
+        return null;
+      }
+
+      return cacheEntry;
     } catch (error) {
       if (error.name === "NoSuchKey" || error.name === "AccessDenied") {
         return null;
@@ -52,13 +85,22 @@ export default class S3CacheHandler {
         payload = await this.streamToBuffer(entry);
       }
 
-      const buffer = v8.serialize(payload);
+      // const buffer = v8.serialize(payload);
+
+      // const command = new PutObjectCommand({
+      //   Bucket: BUCKET_NAME,
+      //   Key: s3Key,
+      //   Body: buffer,
+      //   ContentType: "application/octet-stream",
+      // });
+
+      const serializedData = JSON.stringify(value, jsonReplacer);
 
       const command = new PutObjectCommand({
         Bucket: BUCKET_NAME,
         Key: s3Key,
-        Body: buffer,
-        ContentType: "application/octet-stream",
+        Body: serializedData,
+        ContentType: "application/json",
       });
 
       await s3.send(command);
