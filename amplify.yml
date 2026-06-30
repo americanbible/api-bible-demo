@@ -5,12 +5,13 @@ frontend:
       commands:
         - env
         - npm install
+        - rm -rf .next/cache # Clean out legacy compilation caches
     build:
       commands:
         - env | grep -e API_BIBLE_API_KEY -e CACHE_BUCKET_NAME -e NEXT_BUILD_ID >> ./.env.production
         - npm run build
   artifacts:
-    baseDirectory: .next
+    baseDirectory: .next/standalone # 👈 CRITICAL: Targets the protected standalone build files
     files:
       - "**/*"
   buildPath: /

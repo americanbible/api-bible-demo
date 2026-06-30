@@ -28,8 +28,7 @@ class CacheHandler {
     const bucket = process.env.CACHE_BUCKET_NAME;
     const buildId = process.env.NEXT_BUILD_ID || "default-build";
 
-    // 1. 👈 CRITICAL: Skip any legacy page routing paths or abstract code frames.
-    // Component Caching keys are always pure alphanumeric cryptographic hashes.
+    // Component caching models use 128-character alphanumeric hashes. Skip structural templates.
     if (
       !bucket ||
       key.includes("/") ||
@@ -52,15 +51,14 @@ class CacheHandler {
 
       return JSON.parse(dataStr);
     } catch (error) {
-      // Return a clean undefined on S3 miss to let Next.js generate the component fresh
       if (
         error.name === "NoSuchKey" ||
         error.name === "AccessDenied" ||
         error.name === "TypeError"
       ) {
-        return undefined;
+        return undefined; // Clean cache miss
       }
-      console.error("[ComponentCache] S3 Read Exception:", error.message);
+      console.error("[ComponentCache] S3 Read Error:", error.message);
       return undefined;
     }
   }
@@ -69,7 +67,6 @@ class CacheHandler {
     const bucket = process.env.CACHE_BUCKET_NAME;
     const buildId = process.env.NEXT_BUILD_ID || "default-build";
 
-    // 2. 👈 CRITICAL: Never write page-level structural wrappers to S3
     if (
       !bucket ||
       !value ||
@@ -94,7 +91,7 @@ class CacheHandler {
         }),
       );
     } catch (error) {
-      console.error("[ComponentCache] S3 Write Exception:", error.message);
+      console.error("[ComponentCache] S3 Write Error:", error.message);
     }
   }
 
