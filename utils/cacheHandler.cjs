@@ -77,7 +77,11 @@ module.exports = class S3CacheHandler {
         }
       }
 
-      console.error("[CacheHandler] S3 API Read Error:", error.message);
+      console.error(
+        "[CacheHandler] S3 API Read Error:",
+        error.name,
+        error.message,
+      );
       return undefined;
     }
   }
@@ -109,7 +113,7 @@ module.exports = class S3CacheHandler {
         }),
       );
     } catch (error) {
-      console.error("S3 Cache Set Error:", error);
+      console.error("[CacheHandler] S3 API Write Error:", error);
     }
   }
 
