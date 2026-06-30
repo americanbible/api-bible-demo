@@ -6,13 +6,9 @@ const {
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
 
-// An active, isolated memory layer to protect internal Next.js compilation layout frames
+// An active global memory map to fulfill Next.js's internal component layout shells
 const localMemoryStore = new Map();
 
-/**
- * Modern Custom Replacer
- * Preserves structural Maps and binary Buffers into safe text mappings
- */
 function customReplacer(key, value) {
   if (value instanceof Map) {
     return { __type: "Map", value: Array.from(value.entries()) };
@@ -26,10 +22,6 @@ function customReplacer(key, value) {
   return value;
 }
 
-/**
- * Deep Custom Reviver
- * Fully maps authentic Map and Buffer instances back to the framework
- */
 function customDeserializer(key, value) {
   if (value && typeof value === "object") {
     if (value.__type === "Map") {
@@ -63,14 +55,14 @@ module.exports = class CacheHandler {
   }
 
   async get(key) {
-    const bucket = process.env.CACHE_BUCKET_NAME;
-    const buildId = process.env.NEXT_BUILD_ID || "default-build";
-
-    // Tier 1: If Next.js asks for abstract code components, isolate it to local memory
+    // 1. TIER 1 SAFETY NET: If Next.js asks for abstract component paths during PPR assembly,
+    // handle it natively via memory to protect complex React structures from destruction.
     if (key.includes("[") || key.includes("]")) {
       return localMemoryStore.get(key) || undefined;
     }
 
+    const bucket = process.env.CACHE_BUCKET_NAME;
+    const buildId = process.env.NEXT_BUILD_ID || "default-build";
     if (!bucket) return undefined;
 
     const s3Key = `${buildId}/${key}`;
@@ -86,7 +78,7 @@ module.exports = class CacheHandler {
 
       const cacheEntry = JSON.parse(dataStr, customDeserializer);
 
-      // Deep type validation safety net to catch corrupt shapes
+      // Verify that structural segment mapping metadata wasn't flattened
       if (
         cacheEntry?.value?.segmentData &&
         !(cacheEntry.value.segmentData instanceof Map)
@@ -96,65 +88,33 @@ module.exports = class CacheHandler {
 
       return cacheEntry;
     } catch (error) {
-      // 🌟 THE INVARIANT & P.GET RECONCILIATION FALLBACK:
-      // If S3 doesn't have the entry yet, we MUST return a structure that contains
-      // an active Map for segmentData, but whose layout metadata properties are empty.
-      // This tells the invariant engine that the payload envelope is safe to parse,
-      // while signaling a complete cache miss so Next.js generates the page from scratch.
-      if (
-        error.name === "NoSuchKey" ||
-        error.name === "AccessDenied" ||
-        error.name === "TypeError"
-      ) {
-        if (
-          key.startsWith("app/") ||
-          key.includes("page") ||
-          key.includes("layout")
-        ) {
-          return {
-            lastModified: Date.now(),
-            value: {
-              kind: "PAGE",
-              html: null, // Forces a safe page layout fallback regeneration loop
-              rsc: null, // Clears the dual parallel invariant check
-              status: 200,
-              headers: {},
-              segmentData: new Map(), // Explicitly stops the initial P.get crash loop!
-            },
-          };
-        }
-
-        // Return local memory snapshot fallback if available
-        if (localMemoryStore.has(key)) {
-          return localMemoryStore.get(key);
-        }
+      // Fallback check if component generation exists locally
+      if (localMemoryStore.has(key)) {
+        return localMemoryStore.get(key);
       }
       return undefined;
     }
   }
 
   async set(key, value, ctx) {
-    const bucket = process.env.CACHE_BUCKET_NAME;
-    const buildId = process.env.NEXT_BUILD_ID || "default-build";
-
-    if (!value) return;
-
-    // Update memory cache immediately to protect immediate page compilation passes
+    // 2. Seed memory store instantly so React can read components within the same rendering frame
     localMemoryStore.set(key, value);
 
     if (key.includes("[") || key.includes("]")) {
       return;
     }
 
-    // Block malformed plain objects from uploading to the bucket
+    const bucket = process.env.CACHE_BUCKET_NAME;
+    const buildId = process.env.NEXT_BUILD_ID || "default-build";
+    if (!bucket || !value) return;
+
+    // Block saving corrupted flat objects into component scopes
     if (
       value?.value?.segmentData &&
       !(value.value.segmentData instanceof Map)
     ) {
       return;
     }
-
-    if (!bucket) return;
 
     const s3Key = `${buildId}/${key}`;
     try {
@@ -170,7 +130,10 @@ module.exports = class CacheHandler {
         }),
       );
     } catch (error) {
-      console.error("[CacheHandler] S3 Write Error:", error.message);
+      console.error(
+        "[CacheComponents Handler] S3 Write Exception:",
+        error.message,
+      );
     }
   }
 
