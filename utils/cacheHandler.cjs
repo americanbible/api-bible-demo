@@ -7,6 +7,9 @@ const {
 } = require("@aws-sdk/client-s3");
 const v8 = require("node:v8");
 
+// An active global memory map to fulfill Next.js's abstract compilation layout frames
+const localMemoryStore = new Map();
+
 class CacheHandler {
   constructor(options) {
     this.options = options;
@@ -29,10 +32,13 @@ class CacheHandler {
     const bucket = process.env.CACHE_BUCKET_NAME;
     const buildId = process.env.NEXT_BUILD_ID || "default-build";
 
-    // 1. 👈 CRITICAL: Never pull internal structural templates from S3
-    if (!bucket || key.includes("[") || key.includes("]")) {
-      return undefined;
+    // 1. TIER 1 (Compilation Shells): If Next.js asks for a literal template string path,
+    // fetch it from memory to preserve structural map integrity during the build phase.
+    if (key.includes("[") || key.includes("]")) {
+      return localMemoryStore.get(key) || undefined;
     }
+
+    if (!bucket) return undefined;
 
     const s3Key = `${buildId}/${key}`;
     try {
@@ -47,21 +53,23 @@ class CacheHandler {
         uint8Array.byteLength,
       );
 
+      // Restore full binary states (including nested maps & buffers) exactly as Next expects
       const cacheEntry = v8.deserialize(buffer);
 
-      // 2. Structural integrity fallback: Ensure maps are healthy
+      // Validation safety net
       if (
         cacheEntry?.value?.segmentData &&
         !(cacheEntry.value.segmentData instanceof Map)
       ) {
-        console.warn(
-          `[CacheHandler] Rejected malformed segmentData Map for key: ${key}`,
-        );
         return undefined;
       }
 
       return cacheEntry;
     } catch (error) {
+      // On an S3 miss, fall back to check if it exists in local memory as a backup
+      if (localMemoryStore.has(key)) {
+        return localMemoryStore.get(key);
+      }
       if (
         error.name === "NoSuchKey" ||
         error.name === "AccessDenied" ||
@@ -78,18 +86,26 @@ class CacheHandler {
     const bucket = process.env.CACHE_BUCKET_NAME;
     const buildId = process.env.NEXT_BUILD_ID || "default-build";
 
-    // 3. 👈 CRITICAL: Prevent Next.js from saving structural templates into S3
-    if (!bucket || !value || key.includes("[") || key.includes("]")) {
+    if (!value) return;
+
+    // 2. ALWAYS seed local memory first. This prevents Next.js from falling back
+    // to a raw, flattened layout object during immediate processing loops.
+    localMemoryStore.set(key, value);
+
+    // 3. TIER 1 (Compilation Shells): Do not send abstract path tokens to S3.
+    if (key.includes("[") || key.includes("]")) {
       return;
     }
 
-    // 4. Defensive Guard: Never upload a corrupted flat layout map to your bucket
+    // Defensive check: Do not upload corrupt shapes to persistent storage
     if (
       value?.value?.segmentData &&
       !(value.value.segmentData instanceof Map)
     ) {
       return;
     }
+
+    if (!bucket) return;
 
     const s3Key = `${buildId}/${key}`;
     try {
