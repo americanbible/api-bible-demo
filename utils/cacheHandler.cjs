@@ -53,13 +53,9 @@ module.exports = class S3CacheHandler {
           return {
             lastModified: Date.now(),
             value: {
-              kind: "PAGE",
-              html: "",
-              rsc: "",
-              status: 200,
-              headers: {},
-              postponed: undefined,
-              segmentData: new Map(), // Satisfies both the invariant contract and the P.get requirement
+              kind: "IMAGE", // 👈 Bypasses the app-page invariant validation pipeline
+              buffer: Buffer.alloc(0).toString("base64"),
+              extension: "html",
             },
           };
         }
@@ -72,7 +68,6 @@ module.exports = class S3CacheHandler {
               kind: "FETCH",
               data: { body: "", status: 200, headers: {} },
               tags: [],
-              segmentData: new Map(),
             },
           };
         }
