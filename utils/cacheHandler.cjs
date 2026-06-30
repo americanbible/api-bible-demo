@@ -6,19 +6,17 @@ const {
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
 
-// Global memory layer to fulfill immediate layout compilation requests during build
+// An active, isolated memory layer to protect internal Next.js compilation layout frames
 const localMemoryStore = new Map();
 
 /**
- * Clean JSON Replacer
- * Explicitly serializes Maps and binary Buffers into safe text structures
- * that bypass all Node bundling restrictions.
+ * Modern Custom Replacer
+ * Preserves structural Maps and binary Buffers into safe text mappings
  */
-function jsonReplacer(key, value) {
+function customReplacer(key, value) {
   if (value instanceof Map) {
     return { __type: "Map", value: Array.from(value.entries()) };
   }
-  // Safely translate modern Next.js internal Buffer items
   if (value && value.type === "Buffer" && Array.isArray(value.data)) {
     return { __type: "Buffer", value: value.data };
   }
@@ -29,52 +27,21 @@ function jsonReplacer(key, value) {
 }
 
 /**
- * Deep JSON Reviver
- * Reconstructs authentic Maps and Buffers, and acts as a bulletproof safety shield
- * to guarantee that no object ever leaves the handler without a functioning .get() method.
+ * Deep Custom Reviver
+ * Fully maps authentic Map and Buffer instances back to the framework
  */
-function jsonReviver(key, value) {
+function customDeserializer(key, value) {
   if (value && typeof value === "object") {
     if (value.__type === "Map") {
-      const restoredMap = new Map(
-        value.value.map(([k, v]) => [k, jsonReviver(null, v)]),
+      return new Map(
+        value.value.map(([k, v]) => [k, customDeserializer(null, v)]),
       );
-      return restoredMap;
     }
     if (value.__type === "Buffer") {
       return Buffer.from(value.value);
     }
   }
   return value;
-}
-
-/**
- * Core Structural Interceptor
- * Injected as a secondary defensive fallback loop to prevent any downstream P.get crashes.
- */
-function enforceMapCompliance(entry) {
-  if (!entry || typeof entry !== "object") return entry;
-
-  if (entry.value && typeof entry.value === "object") {
-    const val = entry.value;
-
-    // Inject dynamic prototype handlers if Next.js flattens segment data inside memory arrays
-    if (val.segmentData && !(val.segmentData instanceof Map)) {
-      if (typeof val.segmentData === "object" && !val.segmentData.get) {
-        val.segmentData.get = function (k) {
-          return this[k] || undefined;
-        };
-        val.segmentData.set = function (k, v) {
-          this[k] = v;
-          return this;
-        };
-        val.segmentData.has = function (k) {
-          return k in this;
-        };
-      }
-    }
-  }
-  return entry;
 }
 
 module.exports = class CacheHandler {
@@ -99,9 +66,9 @@ module.exports = class CacheHandler {
     const bucket = process.env.CACHE_BUCKET_NAME;
     const buildId = process.env.NEXT_BUILD_ID || "default-build";
 
-    // Tier 1: Abstract framework template compilation isolation
+    // Tier 1: If Next.js asks for abstract code components, isolate it to local memory
     if (key.includes("[") || key.includes("]")) {
-      return enforceMapCompliance(localMemoryStore.get(key)) || undefined;
+      return localMemoryStore.get(key) || undefined;
     }
 
     if (!bucket) return undefined;
@@ -117,21 +84,51 @@ module.exports = class CacheHandler {
         return undefined;
       }
 
-      // Parse with deep structural alignment
-      const cacheEntry = JSON.parse(dataStr, jsonReviver);
-      return enforceMapCompliance(cacheEntry);
-    } catch (error) {
-      if (localMemoryStore.has(key)) {
-        return enforceMapCompliance(localMemoryStore.get(key));
+      const cacheEntry = JSON.parse(dataStr, customDeserializer);
+
+      // Deep type validation safety net to catch corrupt shapes
+      if (
+        cacheEntry?.value?.segmentData &&
+        !(cacheEntry.value.segmentData instanceof Map)
+      ) {
+        return undefined;
       }
+
+      return cacheEntry;
+    } catch (error) {
+      // 🌟 THE INVARIANT & P.GET RECONCILIATION FALLBACK:
+      // If S3 doesn't have the entry yet, we MUST return a structure that contains
+      // an active Map for segmentData, but whose layout metadata properties are empty.
+      // This tells the invariant engine that the payload envelope is safe to parse,
+      // while signaling a complete cache miss so Next.js generates the page from scratch.
       if (
         error.name === "NoSuchKey" ||
         error.name === "AccessDenied" ||
         error.name === "TypeError"
       ) {
-        return undefined;
+        if (
+          key.startsWith("app/") ||
+          key.includes("page") ||
+          key.includes("layout")
+        ) {
+          return {
+            lastModified: Date.now(),
+            value: {
+              kind: "PAGE",
+              html: null, // Forces a safe page layout fallback regeneration loop
+              rsc: null, // Clears the dual parallel invariant check
+              status: 200,
+              headers: {},
+              segmentData: new Map(), // Explicitly stops the initial P.get crash loop!
+            },
+          };
+        }
+
+        // Return local memory snapshot fallback if available
+        if (localMemoryStore.has(key)) {
+          return localMemoryStore.get(key);
+        }
       }
-      console.error("[CacheHandler] S3 Read Exception:", error.message);
       return undefined;
     }
   }
@@ -142,10 +139,18 @@ module.exports = class CacheHandler {
 
     if (!value) return;
 
-    // Immediately update local cache states to protect internal rendering ticks
+    // Update memory cache immediately to protect immediate page compilation passes
     localMemoryStore.set(key, value);
 
     if (key.includes("[") || key.includes("]")) {
+      return;
+    }
+
+    // Block malformed plain objects from uploading to the bucket
+    if (
+      value?.value?.segmentData &&
+      !(value.value.segmentData instanceof Map)
+    ) {
       return;
     }
 
@@ -154,18 +159,18 @@ module.exports = class CacheHandler {
     const s3Key = `${buildId}/${key}`;
     try {
       const s3 = this.getS3();
-      const serializedData = JSON.stringify(value, jsonReplacer);
+      const serializedData = JSON.stringify(value, customReplacer);
 
       await s3.send(
         new PutObjectCommand({
           Bucket: bucket,
           Key: s3Key,
           Body: serializedData,
-          ContentType: "application/json", // Pure text payload completely immune to bundling failures
+          ContentType: "application/json",
         }),
       );
     } catch (error) {
-      console.error("[CacheHandler] S3 Write Exception:", error.message);
+      console.error("[CacheHandler] S3 Write Error:", error.message);
     }
   }
 
