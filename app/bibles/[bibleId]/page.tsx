@@ -23,7 +23,7 @@ export default async function BiblePage(props: BiblePageProps) {
 
   return (
     <Suspense fallback={<PageLoader />}>
-      <CachedBiblePage {...params} />
+      <CachedBiblePage bibleId={params.bibleId} />
     </Suspense>
   );
 }
