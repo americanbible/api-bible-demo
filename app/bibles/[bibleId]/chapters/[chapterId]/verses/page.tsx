@@ -3,8 +3,9 @@ import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { ListSection } from "@/components/sections/ListSection";
 import { client } from "@/utils/api";
-import { cacheLife } from "next/cache";
 import Link from "next/link";
+
+export const dynamic = "force-static";
 
 type VersesListPageProps = {
   params: Promise<{ bibleId: string; chapterId: string }>;
@@ -16,8 +17,6 @@ type VersesListPageProps = {
  * See our [Verses Guide](https://docs.api.bible/guides/verses) for more.
  */
 export default async function VersesListPage(props: VersesListPageProps) {
-  "use cache";
-  cacheLife("max");
   const { bibleId, chapterId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint

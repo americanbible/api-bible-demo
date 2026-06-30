@@ -4,7 +4,8 @@ import { ListSection } from "@/components/sections/ListSection";
 import Link from "next/link";
 import { Page } from "@/components/Page";
 import { client } from "@/utils/api";
-import { cacheLife } from "next/cache";
+
+export const dynamic = "force-static";
 
 type SectionsListPageProps = {
   params: Promise<{ bibleId: string; bookId: string }>;
@@ -18,8 +19,6 @@ type SectionsListPageProps = {
 export default async function BookSectionsListPage(
   props: SectionsListPageProps,
 ) {
-  "use cache";
-  cacheLife("max");
   const { bibleId, bookId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
