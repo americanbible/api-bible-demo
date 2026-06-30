@@ -37,7 +37,7 @@ module.exports = class S3CacheHandler {
         delete cacheEntry.value.segmentData;
       }
 
-      return cacheEntry || undefined;
+      return cacheEntry || null;
     } catch (error) {
       if (
         error.name === "NoSuchKey" ||
@@ -82,7 +82,7 @@ module.exports = class S3CacheHandler {
         error.name,
         error.message,
       );
-      return undefined;
+      return null;
     }
   }
 
