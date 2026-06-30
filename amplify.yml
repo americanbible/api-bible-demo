@@ -10,6 +10,17 @@ frontend:
       commands:
         - env | grep -e API_BIBLE_API_KEY -e CACHE_BUCKET_NAME -e NEXT_BUILD_ID >> ./.env.production
         - npm run build
+
+        # 🌟 THE AMPLIFY STANDALONE ASSEMBLY FIX:
+        # Create the deployment structure Amplify expects
+        - mkdir -p .amplify-hosting/compute
+        - cp -r .next/standalone/. .amplify-hosting/compute/
+        - cp -r .next/static .amplify-hosting/compute/.next/static
+        - cp -r public .amplify-hosting/compute/public
+
+        # Create the required deployment metadata manifest
+        - echo '{"version":1,"framework":"next","type":"server","entrypoint":"server.js"}' > .amplify-hosting/deploy-manifest.json
+
   artifacts:
     baseDirectory: .next/standalone # 👈 CRITICAL: Targets the protected standalone build files
     files:
