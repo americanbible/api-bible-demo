@@ -6,37 +6,7 @@ const {
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
 
-// Local memory mapping fallback to store transient layout configurations safely
-const componentCacheMap = new Map();
-
-function customReplacer(key, value) {
-  if (value instanceof Map) {
-    return { __type: "Map", value: Array.from(value.entries()) };
-  }
-  if (value && value.type === "Buffer" && Array.isArray(value.data)) {
-    return { __type: "Buffer", value: value.data };
-  }
-  if (Buffer.isBuffer(value)) {
-    return { __type: "Buffer", value: Array.from(value) };
-  }
-  return value;
-}
-
-function customDeserializer(key, value) {
-  if (value && typeof value === "object") {
-    if (value.__type === "Map") {
-      return new Map(
-        value.value.map(([k, v]) => [k, customDeserializer(null, v)]),
-      );
-    }
-    if (value.__type === "Buffer") {
-      return Buffer.from(value.value);
-    }
-  }
-  return value;
-}
-
-module.exports = class CacheHandler {
+class CacheHandler {
   constructor(options) {
     this.options = options;
     this.s3Client = null;
@@ -55,15 +25,15 @@ module.exports = class CacheHandler {
   }
 
   async get(key) {
-    // Tier 1: Isolate compilation layout frames to local memory
-    if (key.includes("[") || key.includes("]")) {
-      return componentCacheMap.get(key) || undefined;
-    }
-
     const bucket = process.env.CACHE_BUCKET_NAME;
     const buildId = process.env.NEXT_BUILD_ID || "default-build";
-    if (!bucket) return undefined;
 
+    // Allow Next.js to handle abstract routing structures locally
+    if (!bucket || key.includes("[") || key.includes("]")) {
+      return undefined;
+    }
+
+    // Cryptographic cryptographic component hash or text string
     const s3Key = `${buildId}/${key}`;
     try {
       const s3 = this.getS3();
@@ -75,48 +45,34 @@ module.exports = class CacheHandler {
         return undefined;
       }
 
-      const cacheEntry = JSON.parse(dataStr, customDeserializer);
-
-      // Protect against structural map destruction
+      // Parse safely. This returns the clean, raw token structure Next.js generated
+      return JSON.parse(dataStr);
+    } catch (error) {
+      // Standard catch-all for S3 misses
       if (
-        cacheEntry?.value?.segmentData &&
-        !(cacheEntry.value.segmentData instanceof Map)
+        error.name === "NoSuchKey" ||
+        error.name === "AccessDenied" ||
+        error.name === "TypeError"
       ) {
         return undefined;
       }
-
-      return cacheEntry;
-    } catch (error) {
-      if (componentCacheMap.has(key)) {
-        return componentCacheMap.get(key);
-      }
+      console.error("[ComponentCache] S3 Read Exception:", error.message);
       return undefined;
     }
   }
 
   async set(key, value, ctx) {
-    // Keep internal memory aligned to protect quick execution ticks
-    componentCacheMap.set(key, value);
-
-    if (key.includes("[") || key.includes("]")) {
-      return;
-    }
-
     const bucket = process.env.CACHE_BUCKET_NAME;
     const buildId = process.env.NEXT_BUILD_ID || "default-build";
-    if (!bucket || !value) return;
 
-    if (
-      value?.value?.segmentData &&
-      !(value.value.segmentData instanceof Map)
-    ) {
+    if (!bucket || !value || key.includes("[") || key.includes("]")) {
       return;
     }
 
     const s3Key = `${buildId}/${key}`;
     try {
       const s3 = this.getS3();
-      const serializedData = JSON.stringify(value, customReplacer);
+      const serializedData = JSON.stringify(value);
 
       await s3.send(
         new PutObjectCommand({
@@ -127,11 +83,13 @@ module.exports = class CacheHandler {
         }),
       );
     } catch (error) {
-      console.error("[CacheComponents] S3 Write Failure:", error.message);
+      console.error("[ComponentCache] S3 Write Exception:", error.message);
     }
   }
 
   async revalidateTag(tag) {
     return;
   }
-};
+}
+
+module.exports = CacheHandler;

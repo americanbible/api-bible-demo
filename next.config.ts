@@ -6,14 +6,14 @@ const isProd = process.env.NODE_ENV === "production";
 const handlerPath = path.resolve(__dirname, "./utils/cacheHandler.cjs");
 
 const nextConfig: NextConfig = {
-  // 1. Keep your experimental component framework active
+  // 1. Keeps modern partial pre-rendering and component caching workflows active
   cacheComponents: true,
 
-  // 🛑 REMOVED: cacheHandler (singular)
-  // 🛑 REMOVED: cacheMaxMemorySize
+  // 🛑 DELIBERATELY OMITTED: cacheHandler (singular) - MUST NOT BE SET
+  // 🛑 DELIBERATELY OMITTED: cacheMaxMemorySize - MUST NOT BE SET
 
   experimental: {
-    // 2. 👈 CRITICAL: Force Next.js to exclusively route component data via S3
+    // 2. 👈 Route modern component function hashes directly to S3
     cacheHandlers: isProd
       ? {
           default: handlerPath,
