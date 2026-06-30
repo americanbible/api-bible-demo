@@ -13,6 +13,14 @@ const nextConfig: NextConfig = {
   cacheHandler: isProd ? handlerPath : undefined,
   cacheMaxMemorySize: isProd ? 0 : undefined,
 
+  cacheHandlers: isProd
+    ? {
+        default: handlerPath,
+        remote: handlerPath,
+        incremental: handlerPath,
+      }
+    : undefined,
+
   experimental: {
     // 3. 👈 ABSOLUTELY REQUIRED FOR CACHECOMPONENTS TO EVALUATE S3 STRINGS
     cacheHandlers: isProd
