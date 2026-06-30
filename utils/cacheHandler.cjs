@@ -6,7 +6,62 @@ const {
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
 
-class CacheHandler {
+// Active global memory cache to protect abstract layout paths during intermediate ticks
+const localMemoryStore = new Map();
+
+function customReplacer(key, value) {
+  if (value instanceof Map) {
+    return { __type: "Map", value: Array.from(value.entries()) };
+  }
+  if (value && value.type === "Buffer" && Array.isArray(value.data)) {
+    return { __type: "Buffer", value: value.data };
+  }
+  if (Buffer.isBuffer(value)) {
+    return { __type: "Buffer", value: Array.from(value) };
+  }
+  return value;
+}
+
+function customDeserializer(key, value) {
+  if (value && typeof value === "object") {
+    if (value.__type === "Map") {
+      return new Map(
+        value.value.map(([k, v]) => [k, customDeserializer(null, v)]),
+      );
+    }
+    if (value.__type === "Buffer") {
+      return Buffer.from(value.value);
+    }
+  }
+  return value;
+}
+
+// In-place prototype handler to completely insulate the framework from P.get failures
+function ensureMapCompliance(entry) {
+  if (!entry || typeof entry !== "object") return entry;
+
+  if (entry.value && typeof entry.value === "object") {
+    const val = entry.value;
+
+    if (val.segmentData && !(val.segmentData instanceof Map)) {
+      if (typeof val.segmentData === "object" && !val.segmentData.get) {
+        val.segmentData.get = function (k) {
+          return this[k] || undefined;
+        };
+        val.segmentData.set = function (k, v) {
+          this[k] = v;
+          return this;
+        };
+        val.segmentData.has = function (k) {
+          return k in this;
+        };
+      }
+    }
+  }
+  return entry;
+}
+
+module.exports = class CacheHandler {
   constructor(options) {
     this.options = options;
     this.s3Client = null;
@@ -25,15 +80,15 @@ class CacheHandler {
   }
 
   async get(key) {
-    const bucket = process.env.CACHE_BUCKET_NAME;
-    const buildId = process.env.NEXT_BUILD_ID || "default-build";
-
-    // Allow Next.js to handle abstract routing structures locally
-    if (!bucket || key.includes("[") || key.includes("]")) {
-      return undefined;
+    // Tier 1: Abstract template compilation isolation
+    if (key.includes("[") || key.includes("]")) {
+      return ensureMapCompliance(localMemoryStore.get(key)) || undefined;
     }
 
-    // Cryptographic cryptographic component hash or text string
+    const bucket = process.env.CACHE_BUCKET_NAME;
+    const buildId = process.env.NEXT_BUILD_ID || "default-build";
+    if (!bucket) return undefined;
+
     const s3Key = `${buildId}/${key}`;
     try {
       const s3 = this.getS3();
@@ -45,34 +100,31 @@ class CacheHandler {
         return undefined;
       }
 
-      // Parse safely. This returns the clean, raw token structure Next.js generated
-      return JSON.parse(dataStr);
+      const cacheEntry = JSON.parse(dataStr, customDeserializer);
+      return ensureMapCompliance(cacheEntry);
     } catch (error) {
-      // Standard catch-all for S3 misses
-      if (
-        error.name === "NoSuchKey" ||
-        error.name === "AccessDenied" ||
-        error.name === "TypeError"
-      ) {
-        return undefined;
+      if (localMemoryStore.has(key)) {
+        return ensureMapCompliance(localMemoryStore.get(key));
       }
-      console.error("[ComponentCache] S3 Read Exception:", error.message);
       return undefined;
     }
   }
 
   async set(key, value, ctx) {
-    const bucket = process.env.CACHE_BUCKET_NAME;
-    const buildId = process.env.NEXT_BUILD_ID || "default-build";
+    localMemoryStore.set(key, value);
 
-    if (!bucket || !value || key.includes("[") || key.includes("]")) {
+    if (key.includes("[") || key.includes("]")) {
       return;
     }
+
+    const bucket = process.env.CACHE_BUCKET_NAME;
+    const buildId = process.env.NEXT_BUILD_ID || "default-build";
+    if (!bucket || !value) return;
 
     const s3Key = `${buildId}/${key}`;
     try {
       const s3 = this.getS3();
-      const serializedData = JSON.stringify(value);
+      const serializedData = JSON.stringify(value, customReplacer);
 
       await s3.send(
         new PutObjectCommand({
@@ -83,13 +135,11 @@ class CacheHandler {
         }),
       );
     } catch (error) {
-      console.error("[ComponentCache] S3 Write Exception:", error.message);
+      console.error("[CacheHandler] S3 Write Failure:", error.message);
     }
   }
 
   async revalidateTag(tag) {
     return;
   }
-}
-
-module.exports = CacheHandler;
+};
