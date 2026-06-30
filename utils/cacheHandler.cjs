@@ -6,8 +6,8 @@ const {
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
 
-// An active global memory map to fulfill Next.js's internal component layout shells
-const localMemoryStore = new Map();
+// Local memory mapping fallback to store transient layout configurations safely
+const componentCacheMap = new Map();
 
 function customReplacer(key, value) {
   if (value instanceof Map) {
@@ -55,10 +55,9 @@ module.exports = class CacheHandler {
   }
 
   async get(key) {
-    // 1. TIER 1 SAFETY NET: If Next.js asks for abstract component paths during PPR assembly,
-    // handle it natively via memory to protect complex React structures from destruction.
+    // Tier 1: Isolate compilation layout frames to local memory
     if (key.includes("[") || key.includes("]")) {
-      return localMemoryStore.get(key) || undefined;
+      return componentCacheMap.get(key) || undefined;
     }
 
     const bucket = process.env.CACHE_BUCKET_NAME;
@@ -78,7 +77,7 @@ module.exports = class CacheHandler {
 
       const cacheEntry = JSON.parse(dataStr, customDeserializer);
 
-      // Verify that structural segment mapping metadata wasn't flattened
+      // Protect against structural map destruction
       if (
         cacheEntry?.value?.segmentData &&
         !(cacheEntry.value.segmentData instanceof Map)
@@ -88,17 +87,16 @@ module.exports = class CacheHandler {
 
       return cacheEntry;
     } catch (error) {
-      // Fallback check if component generation exists locally
-      if (localMemoryStore.has(key)) {
-        return localMemoryStore.get(key);
+      if (componentCacheMap.has(key)) {
+        return componentCacheMap.get(key);
       }
       return undefined;
     }
   }
 
   async set(key, value, ctx) {
-    // 2. Seed memory store instantly so React can read components within the same rendering frame
-    localMemoryStore.set(key, value);
+    // Keep internal memory aligned to protect quick execution ticks
+    componentCacheMap.set(key, value);
 
     if (key.includes("[") || key.includes("]")) {
       return;
@@ -108,7 +106,6 @@ module.exports = class CacheHandler {
     const buildId = process.env.NEXT_BUILD_ID || "default-build";
     if (!bucket || !value) return;
 
-    // Block saving corrupted flat objects into component scopes
     if (
       value?.value?.segmentData &&
       !(value.value.segmentData instanceof Map)
@@ -130,10 +127,7 @@ module.exports = class CacheHandler {
         }),
       );
     } catch (error) {
-      console.error(
-        "[CacheComponents Handler] S3 Write Exception:",
-        error.message,
-      );
+      console.error("[CacheComponents] S3 Write Failure:", error.message);
     }
   }
 

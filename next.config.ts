@@ -6,23 +6,14 @@ const isProd = process.env.NODE_ENV === "production";
 const handlerPath = path.resolve(__dirname, "./utils/cacheHandler.cjs");
 
 const nextConfig: NextConfig = {
-  // 1. Keep the base option active
+  // 1. Keep your experimental component framework active
   cacheComponents: true,
 
-  // 2. Direct core handler configuration
-  cacheHandler: isProd ? handlerPath : undefined,
-  cacheMaxMemorySize: isProd ? 0 : undefined,
-
-  cacheHandlers: isProd
-    ? {
-        default: handlerPath,
-        remote: handlerPath,
-        incremental: handlerPath,
-      }
-    : undefined,
+  // 🛑 REMOVED: cacheHandler (singular)
+  // 🛑 REMOVED: cacheMaxMemorySize
 
   experimental: {
-    // 3. 👈 ABSOLUTELY REQUIRED FOR CACHECOMPONENTS TO EVALUATE S3 STRINGS
+    // 2. 👈 CRITICAL: Force Next.js to exclusively route component data via S3
     cacheHandlers: isProd
       ? {
           default: handlerPath,
