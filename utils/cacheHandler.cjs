@@ -37,7 +37,7 @@ module.exports = class S3CacheHandler {
         delete cacheEntry.value.segmentData;
       }
 
-      return cacheEntry || null;
+      return cacheEntry || undefined;
     } catch (error) {
       if (
         error.name === "NoSuchKey" ||
@@ -82,7 +82,7 @@ module.exports = class S3CacheHandler {
         error.name,
         error.message,
       );
-      return null;
+      return undefined;
     }
   }
 
@@ -106,7 +106,7 @@ module.exports = class S3CacheHandler {
 
       await s3.send(
         new PutObjectCommand({
-          Bucket: bucket,
+          Bucket: BUCKET_NAME,
           Key: s3Key,
           Body: serializedData,
           ContentType: "application/json",
