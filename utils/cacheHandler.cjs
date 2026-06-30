@@ -72,6 +72,7 @@ module.exports = class S3CacheHandler {
               kind: "FETCH",
               data: { body: "", status: 200, headers: {} },
               tags: [],
+              segmentData: new Map(),
             },
           };
         }
