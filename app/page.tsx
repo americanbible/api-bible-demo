@@ -4,14 +4,10 @@ import { LinkButton } from "@/components/LinkButton";
 import { TextSection } from "@/components/sections/TextSection";
 import { BookOpenText } from "lucide-react";
 import Link from "next/link";
-import { cacheLife } from "next/cache";
 
 /**
  * Home page of the application. */
 export default async function HomePage() {
-  "use cache";
-  cacheLife("max");
-
   return (
     <div className="flex flex-col">
       <HeaderSection

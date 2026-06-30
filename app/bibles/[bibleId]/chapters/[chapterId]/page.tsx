@@ -5,7 +5,8 @@ import Link from "next/link";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { Page } from "@/components/Page";
 import { client } from "@/utils/api";
-import { cacheLife } from "next/cache";
+
+export const dynamic = "force-static";
 
 type ChapterPageProps = {
   params: Promise<{ bibleId: string; chapterId: string }>;
@@ -17,8 +18,6 @@ type ChapterPageProps = {
  * See our [Chapters Guide](https://docs.api.bible/guides/chapters) for more.
  */
 export default async function ChapterPage(props: ChapterPageProps) {
-  "use cache";
-  cacheLife("max");
   const { bibleId, chapterId } = await props.params;
 
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint

@@ -8,7 +8,8 @@ import { Page } from "@/components/Page";
 import { Spacer } from "@/components/Spacer";
 import { client } from "@/utils/api";
 import { Bible } from "@americanbible/api-bible-sdk";
-import { cacheLife } from "next/cache";
+
+export const dynamic = "force-static";
 
 type SearchResultsPageProps = {
   bibleId: string;
@@ -31,8 +32,6 @@ export async function SearchResultsPage({
   searchValue,
   searchLink,
 }: SearchResultsPageProps) {
-  "use cache";
-  cacheLife("max");
   //Fetch a single bible from the `/bibles/{bibleId}` endpoint
   const { data: bible } = await client.bibles.get(bibleId);
   //Execute a search with the given query using the `/bibles/{bibleId}/search?query={query}` endpoint
