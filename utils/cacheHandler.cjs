@@ -1,9 +1,11 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
+// utils/cacheHandler.cjs
 const {
   S3Client,
   GetObjectCommand,
   PutObjectCommand,
 } = require("@aws-sdk/client-s3");
+const v8 = require("node:v8"); // 👈 Native Node module to accurately preserve Maps and Buffers
 
 class CacheHandler {
   constructor(options) {
@@ -36,39 +38,26 @@ class CacheHandler {
         Key: `${buildId}/${key}`,
       });
       const response = await s3.send(command);
-      const dataStr = await response.Body.transformToString();
 
-      // Safety net: If S3 somehow saved a bad or literal "undefined" string, treat it as a miss
-      if (!dataStr || dataStr === "undefined" || dataStr === "null") {
-        return undefined;
-      }
+      // 1. Convert S3 stream straight into a raw Byte Array
+      const uint8Array = await response.Body.transformToByteArray();
 
-      const cacheEntry = JSON.parse(dataStr, (k, v) => {
-        // Correctly restore native Map properties for Next.js internal page systems
-        if (v && typeof v === "object" && v.__type === "Map") {
-          return new Map(v.value);
-        }
-        return v;
-      });
+      // 2. Wrap it cleanly in a Node.js Buffer
+      const buffer = Buffer.from(
+        uint8Array.buffer,
+        uint8Array.byteOffset,
+        uint8Array.byteLength,
+      );
 
-      // Confirm that the parsed JSON matches the strict envelope shape Next.js requires
-      if (
-        cacheEntry &&
-        typeof cacheEntry === "object" &&
-        "value" in cacheEntry
-      ) {
-        return cacheEntry;
-      }
-
-      return undefined;
+      // 3. Reconstruct the precise V8 memory state (restoring Maps and nested Buffers perfectly)
+      return v8.deserialize(buffer);
     } catch (error) {
-      // Return a clean undefined on S3 miss. Next.js will generate the page fresh.
       if (
         error.name === "NoSuchKey" ||
         error.name === "AccessDenied" ||
         error.name === "TypeError"
       ) {
-        return undefined;
+        return undefined; // Hand control back to Next.js safely on cache miss
       }
       console.error("[CacheHandler] S3 API Read Error:", error.message);
       return undefined;
@@ -79,25 +68,21 @@ class CacheHandler {
     const bucket = process.env.CACHE_BUCKET_NAME;
     const buildId = process.env.NEXT_BUILD_ID || "default-build";
 
-    if (!bucket) return;
-    if (!value || typeof value !== "object") return;
+    if (!bucket || !value) return;
 
     try {
       const s3 = this.getS3();
-      const serializedData = JSON.stringify(value, (k, v) => {
-        // Safely preserve Map structures before stringifying to S3
-        if (value instanceof Map || v instanceof Map) {
-          return { __type: "Map", value: Array.from(v.entries()) };
-        }
-        return v;
-      });
 
+      // 1. Serialize the actual value instance into raw V8 binary bytes
+      const binaryPayload = v8.serialize(value);
+
+      // 2. Upload directly to S3 as binary data
       await s3.send(
         new PutObjectCommand({
           Bucket: bucket,
           Key: `${buildId}/${key}`,
-          Body: serializedData,
-          ContentType: "application/json",
+          Body: binaryPayload, // S3 accepts Buffers natively
+          ContentType: "application/octet-stream", // Informs AWS this is binary data
         }),
       );
     } catch (error) {
