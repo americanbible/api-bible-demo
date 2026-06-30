@@ -9,12 +9,11 @@ const nextConfig: NextConfig = {
   // 1. Maintain modern partial pre-rendering and component caching workflows
   cacheComponents: true,
 
-  // 2. 👈 FIX FOR P.GET: Force Next.js to route the page structural shell via S3
-  cacheHandler: isProd ? handlerPath : undefined,
-  cacheMaxMemorySize: isProd ? 0 : undefined,
+  // 🛑 DELIBERATELY REMOVED: cacheHandler (singular)
+  // 🛑 DELIBERATELY REMOVED: cacheMaxMemorySize
 
   experimental: {
-    // 3. Force Next.js to route component function hashes directly to S3
+    // 2. 👈 Force Next.js to exclusively route component data via S3
     cacheHandlers: isProd
       ? {
           default: handlerPath,
