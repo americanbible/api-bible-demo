@@ -11,7 +11,7 @@ export const Navbar = () => {
     <nav className="relative w-full border-black border-b-[1px] p-4">
       <div className="w-full flex gap-2 items-stretch justify-between">
         <div className="flex items-center">
-          <Link href="/">
+          <Link href="/" prefetch={false}>
             <Image
               src="/assets/api-logo.svg"
               alt="API.Bible"

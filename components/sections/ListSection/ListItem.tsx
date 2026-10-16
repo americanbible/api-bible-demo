@@ -14,6 +14,7 @@ export const ListItem = ({ title, href, info }: ListItemProps) => {
   return (
     <Link
       href={href}
+      prefetch={false}
       className="min-w-[100px] p-4 flex justify-between items-center gap-2 bg-[#f1f7fe] hover:bg-[#2563eb] hover:text-white border-[#2563eb] group border-b-[1px]"
     >
       <div className="w-full flex flex-col items-center sm:items-start text-center sm:text-left">
