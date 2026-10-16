@@ -7,6 +7,7 @@ import { InfoSection } from "@/components/sections/InfoSection";
 import { Page } from "@/components/Page";
 import { Spacer } from "@/components/Spacer";
 import { client } from "@/utils/api";
+import { getDemoBible } from "@/utils/getDemoBible";
 import { Bible } from "@americanbible/api-bible-sdk";
 
 export const dynamic = "force-static";
@@ -32,8 +33,8 @@ export async function SearchResultsPage({
   searchValue,
   searchLink,
 }: SearchResultsPageProps) {
-  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const { data: bible } = await client.bibles.get(bibleId);
+  //Get this bible from the demo bibles, fetched once from the `/bibles` endpoint
+  const bible = await getDemoBible(bibleId);
   //Execute a search with the given query using the `/bibles/{bibleId}/search?query={query}` endpoint
   const { data: result } = await client.search.search(bibleId, {
     query: searchValue,

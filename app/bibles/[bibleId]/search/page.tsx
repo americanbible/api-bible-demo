@@ -3,7 +3,7 @@ import { Search } from "lucide-react";
 import { InfoSection } from "@/components/sections/InfoSection";
 import Link from "next/link";
 import { Page } from "@/components/Page";
-import { client } from "@/utils/api";
+import { getDemoBible } from "@/utils/getDemoBible";
 
 export const dynamic = "force-static";
 
@@ -21,8 +21,8 @@ type SearchPageProps = {
 export default async function SearchPage(props: SearchPageProps) {
   const { bibleId } = await props.params;
 
-  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const { data: bible } = await client.bibles.get(bibleId);
+  //Get this bible from the demo bibles, fetched once from the `/bibles` endpoint
+  const bible = await getDemoBible(bibleId);
 
   const values = [
     ["Aaron", "name"],

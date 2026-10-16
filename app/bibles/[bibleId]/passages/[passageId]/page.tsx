@@ -3,6 +3,7 @@ import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { VerseContentSection } from "@/components/sections/VerseContentSection";
 import { client } from "@/utils/api";
+import { getDemoBible } from "@/utils/getDemoBible";
 import { BookText } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -21,8 +22,8 @@ type PassagePageProps = {
 export default async function PassagePage(props: PassagePageProps) {
   const { bibleId, passageId } = await props.params;
 
-  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const { data: bible } = await client.bibles.get(bibleId);
+  //Get this bible from the demo bibles, fetched once from the `/bibles` endpoint
+  const bible = await getDemoBible(bibleId);
   //Fetch a single passage from the `/bibles/{bibleId}/passages/{passageId}` endpoint
   const { data: passage } = await client.passages.get(bibleId, passageId, {
     contentType: "html",
