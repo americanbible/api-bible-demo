@@ -6,6 +6,7 @@ import { InfoSection } from "@/components/sections/InfoSection";
 import { Page } from "@/components/Page";
 import { client } from "@/utils/api";
 import { getDemoBible } from "@/utils/getDemoBible";
+import { hasSections } from "@/utils/demoBibles";
 
 export const dynamic = "force-static";
 
@@ -62,11 +63,16 @@ export default async function ChapterPage(props: ChapterPageProps) {
             href: `/bibles/${bibleId}/chapters/${chapterId}/verses`,
             children: <TextInitial size={16} />,
           },
-          {
-            title: "View Sections",
-            href: `/bibles/${bibleId}/chapters/${chapterId}/sections`,
-            children: <BookText size={16} />,
-          },
+          //Only link to sections for Bibles that include them
+          ...(hasSections(bibleId)
+            ? [
+                {
+                  title: "View Sections",
+                  href: `/bibles/${bibleId}/chapters/${chapterId}/sections`,
+                  children: <BookText size={16} />,
+                },
+              ]
+            : []),
         ]}
       />
 

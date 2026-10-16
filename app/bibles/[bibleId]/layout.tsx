@@ -17,7 +17,7 @@ export default async function BibleLayout({
 }: BibleLayoutProps) {
   const { bibleId } = await params;
 
-  if (!demoBibles.includes(bibleId)) {
+  if (!demoBibles.some(({ id }) => id === bibleId)) {
     notFound();
   }
 

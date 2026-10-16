@@ -16,7 +16,7 @@ let demoBiblesRequest: Promise<Bible[]> | null = null;
 export async function getDemoBible(bibleId: string): Promise<Bible> {
   //Fetch all demo bibles from the `/bibles` endpoint, once per server
   demoBiblesRequest ??= client.bibles
-    .list({ ids: demoBibles })
+    .list({ ids: demoBibles.map(({ id }) => id) })
     .then(({ data }) => data)
     .catch((error) => {
       demoBiblesRequest = null;
