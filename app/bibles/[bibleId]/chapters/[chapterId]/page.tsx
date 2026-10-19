@@ -5,6 +5,8 @@ import Link from "next/link";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { Page } from "@/components/Page";
 import { client } from "@/utils/api";
+import { getDemoBible } from "@/utils/getDemoBible";
+import { hasSections } from "@/utils/demoBibles";
 
 export const dynamic = "force-static";
 
@@ -20,8 +22,8 @@ type ChapterPageProps = {
 export default async function ChapterPage(props: ChapterPageProps) {
   const { bibleId, chapterId } = await props.params;
 
-  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const { data: bible } = await client.bibles.get(bibleId);
+  //Get this bible from the demo bibles, fetched once from the `/bibles` endpoint
+  const bible = await getDemoBible(bibleId);
   //Fetch a single chapter from the `/bibles/{bibleId}/chapters/{chapterId}` endpoint
   const { data: chapter } = await client.chapters.get(bibleId, chapterId, {
     contentType: "html",
@@ -61,11 +63,16 @@ export default async function ChapterPage(props: ChapterPageProps) {
             href: `/bibles/${bibleId}/chapters/${chapterId}/verses`,
             children: <TextInitial size={16} />,
           },
-          {
-            title: "View Sections",
-            href: `/bibles/${bibleId}/chapters/${chapterId}/sections`,
-            children: <BookText size={16} />,
-          },
+          //Only link to sections for Bibles that include them
+          ...(hasSections(bibleId)
+            ? [
+                {
+                  title: "View Sections",
+                  href: `/bibles/${bibleId}/chapters/${chapterId}/sections`,
+                  children: <BookText size={16} />,
+                },
+              ]
+            : []),
         ]}
       />
 

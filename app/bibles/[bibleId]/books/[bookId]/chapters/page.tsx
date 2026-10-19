@@ -3,6 +3,7 @@ import { HeaderSection } from "@/components/sections/HeaderSection";
 import { InfoSection } from "@/components/sections/InfoSection";
 import { ListSection } from "@/components/sections/ListSection";
 import { client } from "@/utils/api";
+import { getDemoBible } from "@/utils/getDemoBible";
 import Link from "next/link";
 
 export const dynamic = "force-static";
@@ -19,8 +20,8 @@ type ChaptersListPageProps = {
 export default async function ChaptersListPage(props: ChaptersListPageProps) {
   const { bibleId, bookId } = await props.params;
 
-  //Fetch a single bible from the `/bibles/{bibleId}` endpoint
-  const { data: bible } = await client.bibles.get(bibleId);
+  //Get this bible from the demo bibles, fetched once from the `/bibles` endpoint
+  const bible = await getDemoBible(bibleId);
   //Fetch a single book from the `/bibles/{bibleId}/books/{bookId}` endpoint
   const { data: book } = await client.books.get(bibleId, bookId);
   //Fetch full list of chapters for the given book from the `/bibles/{bibleId}/books/{bookId}/chapters` endpoint

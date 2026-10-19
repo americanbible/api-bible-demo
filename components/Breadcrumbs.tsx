@@ -17,7 +17,11 @@ export const Breadcrumbs = ({ items }: BreadcrumbsProps) => {
       {items.map(({ title, href }, i) => (
         <React.Fragment key={title + i}>
           {!!href ? (
-            <Link href={href} className="text-sm hover:underline">
+            <Link
+              href={href}
+              prefetch={false}
+              className="text-sm hover:underline"
+            >
               {title}
             </Link>
           ) : (

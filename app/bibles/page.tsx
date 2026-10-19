@@ -17,7 +17,7 @@ export const dynamic = "force-static";
 export default async function BiblesPage() {
   //Fetch bibles from the `/bibles` endpoint
   const { data: bibles } = await client.bibles.list({
-    ids: demoBibles,
+    ids: demoBibles.map(({ id }) => id),
   });
 
   return (
